@@ -1,4 +1,4 @@
-﻿using Codeplex.Data;
+using Codeplex.Data;
 using ElectronicObserver.Data;
 using ElectronicObserver.Observer;
 using ElectronicObserver.Resource;
@@ -409,7 +409,7 @@ namespace ElectronicObserver.Window {
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine( "[海域ゲージ]" );
 
-			foreach ( dynamic elem in data ) {
+			foreach ( dynamic elem in data.api_map_info ) {
 
 				int mapID = (int)elem.api_id;
 				MapInfoData map = KCDatabase.Instance.MapInfo[mapID];
