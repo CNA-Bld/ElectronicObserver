@@ -1532,9 +1532,6 @@ Constants.GetAirSuperiority(AirBaseAttack.AirSuperiority),
 		/// </summary>
 		private void SetHPCombined( BattleData bd ) {
 
-			TableTop.SuspendLayout();
-			TableBottom.SuspendLayout();
-
 			float damageWidth = ( Utility.Configuration.Config.FormBattle.IsShortDamage ? DamageWidth / 2 : DamageWidth );
 			float singleWidth = TableBottom.ColumnStyles[0].Width;
 

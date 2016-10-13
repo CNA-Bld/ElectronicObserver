@@ -8,6 +8,7 @@ using ElectronicObserver.Window.Dialog;
 using ElectronicObserver.Window.Integrate;
 using ElectronicObserver.Window.Plugins;
 using ElectronicObserver.Window.Support;
+using ICSharpCode.SharpZipLib.Zip;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -344,19 +345,19 @@ namespace ElectronicObserver.Window
                        try
                        {
 
-							var assembly = Assembly.LoadFile( file );
-							var pluginTypes = assembly.ExportedTypes.Where( t => t.GetInterface( typeof( IPluginHost ).FullName ) != null );
-							if ( pluginTypes != null && pluginTypes.Count() > 0 )
-							{
-								foreach ( var pluginType in pluginTypes )
-								{
-									var plugin = (IPluginHost)assembly.CreateInstance( pluginType.FullName );
-									lock ( _sync )
-									{
-										Plugins.Add( plugin );
-									}
-								}
-							}
+                           var assembly = Assembly.LoadFile(file);
+                           var pluginTypes = assembly.GetExportedTypes().Where(t => t.GetInterface(typeof(IPluginHost).FullName) != null);
+                           if (pluginTypes != null && pluginTypes.Count() > 0)
+                           {
+                               foreach (var pluginType in pluginTypes)
+                               {
+                                   var plugin = (IPluginHost)assembly.CreateInstance(pluginType.FullName);
+                                   lock (_sync)
+                                   {
+                                       Plugins.Add(plugin);
+                                   }
+                               }
+                           }
 
                        }
                        catch (ReflectionTypeLoadException refEx)
@@ -385,49 +386,49 @@ namespace ElectronicObserver.Window
                         }
 
                         if (plugin.PluginType == PluginType.DockContent || (plugin.PluginType & PluginType.DockContentPlugin) == PluginType.DockContentPlugin)
-						{
-							List<DockContent> plugins = new List<DockContent>();
-							foreach ( var type in plugin.GetType().Assembly.ExportedTypes.Where( t => t.BaseType == typeof( DockContent ) ) )
-							{
-								if ( type != null )
-								{
-									var form = (DockContent)type.GetConstructor( new[] { typeof( FormMain ) } ).Invoke( new object[] { this } );
-									plugins.Add( form );
-								}
-							}
-							if ( plugins.Count == 1 )
-							{
-								var p = plugins[0];
-								var item = new ToolStripMenuItem
-								{
-									Text = plugin.MenuTitle ?? p.Text,
-									Tag = p
-								};
-								if ( plugin.MenuIcon != null )
-									item.Image = plugin.MenuIcon;
-								item.Click += menuitem_Click;
-								StripMenu_View.DropDownItems.Add( item );
-							}
-							else if ( plugins.Count > 1 )
-							{
-								var item = new ToolStripMenuItem
-								{
-									Text = plugin.MenuTitle ?? plugins.First().Text
-								};
-								foreach ( var p in plugins )
-								{
-									var subItem = new ToolStripMenuItem
-									{
-										Text = p.Text,
-										Tag = p
-									};
-									if ( p.ShowIcon && p.Icon != null )
-										subItem.Image = p.Icon.ToBitmap();
-									subItem.Click += menuitem_Click;
-									item.DropDownItems.Add( subItem );
-								}
-								StripMenu_View.DropDownItems.Add( item );
-							}
+                        {
+                            List<DockContent> plugins = new List<DockContent>();
+                            foreach (var type in plugin.GetType().Assembly.GetExportedTypes().Where(t => t.BaseType == typeof(DockContent)))
+                            {
+                                if (type != null)
+                                {
+                                    var form = (DockContent)type.GetConstructor(new[] { typeof(FormMain) }).Invoke(new object[] { this });
+                                    plugins.Add(form);
+                                }
+                            }
+                            if (plugins.Count == 1)
+                            {
+                                var p = plugins[0];
+                                var item = new ToolStripMenuItem
+                                {
+                                    Text = plugin.MenuTitle ?? p.Text,
+                                    Tag = p
+                                };
+                                if (plugin.MenuIcon != null)
+                                    item.Image = plugin.MenuIcon;
+                                item.Click += menuitem_Click;
+                                StripMenu_View.DropDownItems.Add(item);
+                            }
+                            else if (plugins.Count > 1)
+                            {
+                                var item = new ToolStripMenuItem
+                                {
+                                    Text = plugin.MenuTitle ?? plugins.First().Text
+                                };
+                                foreach (var p in plugins)
+                                {
+                                    var subItem = new ToolStripMenuItem
+                                    {
+                                        Text = p.Text,
+                                        Tag = p
+                                    };
+                                    if (p.ShowIcon && p.Icon != null)
+                                        subItem.Image = p.Icon.ToBitmap();
+                                    subItem.Click += menuitem_Click;
+                                    item.DropDownItems.Add(subItem);
+                                }
+                                StripMenu_View.DropDownItems.Add(item);
+                            }
 
                             SubForms.AddRange(plugins);
                         }
@@ -873,11 +874,12 @@ namespace ElectronicObserver.Window
                 using (var stream = File.OpenRead(path))
                 {
 
-					using ( var archive = new ZipArchive( stream, ZipArchiveMode.Read ) ) {
+                    using (var archive = new ZipFile(stream))
+                    {
 
-						MainDockPanel.SuspendLayout( true );
-						WindowPlacementManager.LoadWindowPlacement( this, archive.GetEntry( "WindowPlacement.xml" ).Open() );
-						LoadSubWindowsLayout( archive.GetEntry( "SubWindowLayout.xml" ).Open() );
+                        MainDockPanel.SuspendLayout(true);
+                        WindowPlacementManager.LoadWindowPlacement(this, archive.GetInputStream(archive.GetEntry("WindowPlacement.xml")));
+                        LoadSubWindowsLayout(archive.GetInputStream(archive.GetEntry("SubWindowLayout.xml")));
 
                     }
                 }
@@ -930,16 +932,23 @@ namespace ElectronicObserver.Window
 
                 CreateParentDirectories(path);
 
-				using ( var stream = File.Open( path, FileMode.Create ) )
-				using ( var archive = new ZipArchive( stream, ZipArchiveMode.Create ) ) {
+                using (var stream = File.Open(path, FileMode.Create))
+                using (var zipStream = new ZipOutputStream(stream))
+                {
 
-					using ( var layoutstream = archive.CreateEntry( "SubWindowLayout.xml" ).Open() ) {
-						SaveSubWindowsLayout( layoutstream );
-					}
-					using ( var placementstream = archive.CreateEntry( "WindowPlacement.xml" ).Open() ) {
-						WindowPlacementManager.SaveWindowPlacement( this, placementstream );
-					}
-				}
+                    var entry = new ZipEntry("SubWindowLayout.xml");
+                    entry.DateTime = DateTime.Now;
+                    zipStream.PutNextEntry(entry);
+                    SaveSubWindowsLayout(zipStream);
+
+                    entry = new ZipEntry("WindowPlacement.xml");
+                    entry.DateTime = DateTime.Now;
+                    zipStream.PutNextEntry(entry);
+                    WindowPlacementManager.SaveWindowPlacement(this, zipStream);
+
+                    zipStream.CloseEntry();
+
+                }
 
 
                 Utility.Logger.Add(2, "窗口布局已保存。" + path);

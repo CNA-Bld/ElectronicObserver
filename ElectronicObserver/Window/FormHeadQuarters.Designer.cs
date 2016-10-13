@@ -294,7 +294,6 @@
 			this.ClientSize = new System.Drawing.Size(300, 200);
 			this.Controls.Add(this.FlowPanelMaster);
 			this.DoubleBuffered = true;
-			this.Font = Program.Window_Font;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.HideOnClose = true;
 			this.Name = "FormHeadquarters";

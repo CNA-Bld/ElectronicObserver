@@ -62,8 +62,8 @@ namespace ElectronicObserver.Utility {
 
 
 		private static System.Net.WebClient client;
-		private static readonly Uri uri = new Uri( "https://ci.appveyor.com/api/projects/tsanie/electronicobserver/branch/makai" );
-		private const string ARTIFACTS = "https://ci.appveyor.com/project/tsanie/electronicobserver/branch/makai/artifacts";
+		private static readonly Uri uri = new Uri( "https://ci.appveyor.com/api/projects/tsanie/electronicobserver/branch/net40" );
+		private const string ARTIFACTS = "https://ci.appveyor.com/project/tsanie/electronicobserver/branch/net40/artifacts";
 
 		public static void CheckUpdate() {
 
@@ -157,8 +157,8 @@ namespace ElectronicObserver.Utility {
 
 				// 验证版本
 				{
-					var assembly = Assembly.GetExecutingAssembly();
-					string verLocal = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+					var attr = Assembly.GetExecutingAssembly().GetCustomAttributes( typeof( AssemblyInformationalVersionAttribute ), true ).FirstOrDefault();
+					string verLocal = attr == null ? null : ( (AssemblyInformationalVersionAttribute)attr ).InformationalVersion;
 					int compare = CompareVersion( ver, verLocal );
 
 					if ( compare == 0 ) {

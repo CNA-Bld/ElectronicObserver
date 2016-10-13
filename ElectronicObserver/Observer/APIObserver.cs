@@ -211,7 +211,7 @@ namespace ElectronicObserver.Observer {
 							string url = oSession.fullUrl;
 							string body = oSession.GetResponseBodyAsString();
 
-							Task.Run( (Action)( () => {
+							Task.Factory.StartNew( (Action)( () => {
 								SaveResponse( url, body );
 							} ) );
 
@@ -242,7 +242,7 @@ namespace ElectronicObserver.Observer {
 							byte[] responseCopy = new byte[oSession.ResponseBody.Length];
 							Array.Copy( oSession.ResponseBody, responseCopy, oSession.ResponseBody.Length );
 
-							Task.Run( (Action)( () => {
+							Task.Factory.StartNew( (Action)( () => {
 								try {
 									lock ( this ) {
 										// 同時に書き込みが走るとアレなのでロックしておく
@@ -649,7 +649,7 @@ namespace ElectronicObserver.Observer {
 				{
 					if ( c.SaveReceivedData && c.SaveRequest ) {
 
-						Task.Run( (Action)( () => {
+						Task.Factory.StartNew( (Action)( () => {
 							SaveRequest( url, body );
 						} ) );
 					}

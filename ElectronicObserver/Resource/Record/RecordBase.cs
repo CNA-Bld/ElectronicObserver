@@ -61,6 +61,7 @@ namespace ElectronicObserver.Resource.Record {
 						
 						try {
 							LoadLine( line );
+
 						} catch ( Exception ex ) {
 							Utility.Logger.Add( 3, string.Format( "{0}: エラーが発生したため行 {1} をスキップしました。 {2}", path, linecount, ex.Message ) );
 						}
@@ -80,12 +81,12 @@ namespace ElectronicObserver.Resource.Record {
 
 			} catch ( FileNotFoundException ) {
 
-				Utility.Logger.Add( 1, "レコード " + path + " は存在しません。" );
+				Utility.Logger.Add( 1, "记录 " + path + " 不存在。" );
 
 
 			} catch ( Exception ex ) {
 
-				Utility.ErrorReporter.SendErrorReport( ex, "レコード " + path + " の読み込みに失敗しました。" );
+				Utility.ErrorReporter.SendErrorReport( ex, "记录 " + path + " 读取失败。" );
 
 			}
 
@@ -143,6 +144,7 @@ namespace ElectronicObserver.Resource.Record {
 		/// レコードをクリアします。ロード直前に呼ばれます。
 		/// </summary>
 		protected virtual void ClearRecord() { }
+
 
 
 		/// <summary>

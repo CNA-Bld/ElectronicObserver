@@ -187,7 +187,7 @@ namespace ElectronicObserver.Window {
 			}
 
 			CustomFlowSettings();
-		}
+        }
 
 		void Updated( string apiname, dynamic data ) {
 
