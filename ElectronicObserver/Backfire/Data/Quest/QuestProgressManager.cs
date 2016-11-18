@@ -1,4 +1,4 @@
-﻿using ElectronicObserver.Observer;
+﻿using ElectronicObserver.Backfire.Observer;
 using ElectronicObserver.Backfire.Utility.Mathematics;
 using ElectronicObserver.Utility.Storage;
 using System;
@@ -33,7 +33,7 @@ namespace ElectronicObserver.Backfire.Data.Quest {
 	public class QuestProgressManager : DataStorage {
 
 
-		public const string DefaultFilePath = @"Settings\QuestProgress.xml";
+		public const string DefaultFilePath = @"Settings\BackfireQuestProgress.xml";
 
 
 		[IgnoreDataMember]
