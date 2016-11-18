@@ -1,4 +1,5 @@
-﻿using ElectronicObserver.Backfire.Utility.Data;
+﻿using ElectronicObserver.Resource;
+using ElectronicObserver.Backfire.Utility.Data;
 using ElectronicObserver.Backfire.Utility.Mathematics;
 using ElectronicObserver.Window.Control;
 using System;
@@ -10,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ElectronicObserver.Resource;
 
 namespace ElectronicObserver.Backfire.Data {
 
@@ -153,7 +153,7 @@ namespace ElectronicObserver.Backfire.Data {
 
 					_escapedShipList.Clear();
 					if ( IsInSortie ) {
-						
+						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "#{0}「{1}」が帰投しました。", FleetID, Name ) );
 					}
 					IsInSortie = false;
 

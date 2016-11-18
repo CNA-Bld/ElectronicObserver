@@ -1,5 +1,4 @@
-﻿using ElectronicObserver.Utility;
-using ElectronicObserver.Backfire.Utility.Data;
+﻿using ElectronicObserver.Backfire.Utility.Data;
 using ElectronicObserver.Backfire.Utility.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -1193,7 +1192,7 @@ namespace ElectronicObserver.Backfire.Data {
 		/// </summary>
 		private void CalculatePowers() {
 
-			int form = Configuration.Config.Control.PowerEngagementForm;
+			int form = ElectronicObserver.Utility.Configuration.Config.Control.PowerEngagementForm;
 
 			_airbattlePowers = _slot.Select( ( _, i ) => CalculateAirBattlePower( i ) ).ToArray();
 			ShellingPower = CalculateShellingPower( form );

@@ -258,6 +258,27 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 		/// </summary>
 		private void BattleFinished() {
 
+            // Backfire does not keep enemy fleet record.
+			//敵編成記録
+//			EnemyFleetRecord.EnemyFleetElement enemyFleetData = EnemyFleetRecord.EnemyFleetElement.CreateFromCurrentState();
+
+//			if ( enemyFleetData != null )
+//				RecordManager.Instance.EnemyFleet.Update( enemyFleetData );
+
+
+			// ロギング
+			if ( IsPractice ) {
+				ElectronicObserver.Utility.Logger.Add( 2,
+					string.Format( "演習 で「{0}」{1}の「{2}」と交戦しました。( ランク: {3}, 提督Exp+{4}, 艦娘Exp+{5} )",
+						EnemyAdmiralName, EnemyAdmiralRank, Result.EnemyFleetName, Result.Rank, Result.AdmiralExp, Result.BaseExp ) );
+			} else {
+				ElectronicObserver.Utility.Logger.Add( 2,
+					string.Format( "{0}-{1}-{2} で「{3}」と交戦しました。( ランク: {4}, 提督Exp+{5}, 艦娘Exp+{6} )",
+						Compass.MapAreaID, Compass.MapInfoID, Compass.Destination, Result.EnemyFleetName, Result.Rank, Result.AdmiralExp, Result.BaseExp ) );
+			}
+
+
+
 			//ドロップ艦記録
 			if ( !IsPractice ) {
 
@@ -266,6 +287,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 				int shipID = Result.DroppedShipID;
 				int itemID  = Result.DroppedItemID;
 				int eqID = Result.DroppedEquipmentID;
+				bool showLog = ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler;
 
 				if ( shipID != -1 ) {
 
@@ -276,6 +298,8 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 					if ( defaultSlot != null )
 						DroppedEquipmentCount += defaultSlot.Count( id => id != -1 );
 
+					if ( showLog )
+						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0}「{1}」が戦列に加わりました。", ship.ShipTypeName, ship.NameWithClass ) );
 				}
 
 				if ( itemID != -1 ) {
@@ -284,6 +308,11 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 						DroppedItemCount.Add( itemID, 0 );
 					DroppedItemCount[itemID]++;
 
+					if ( showLog ) {
+						var item = KCDatabase.Instance.UseItems[itemID];
+						var itemmaster = KCDatabase.Instance.MasterUseItems[itemID];
+						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "アイテム「{0}」を入手しました。( 合計: {1}個 )", itemmaster != null ? itemmaster.Name : ( "不明なアイテム - ID:" + itemID ), ( item != null ? item.Count : 0 ) + DroppedItemCount[itemID] ) );
+					}
 				}
 
 				if ( eqID != -1 ) {
@@ -291,6 +320,9 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 					EquipmentDataMaster eq = KCDatabase.Instance.MasterEquipments[eqID];
 					DroppedEquipmentCount++;
 
+					if ( showLog ) {
+						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0}「{1}」を入手しました。", eq.CategoryTypeInstance.Name, eq.Name ) );
+					}
 				}
 
 
@@ -300,6 +332,8 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 					KCDatabase.Instance.Admiral.MaxEquipmentCount - ( KCDatabase.Instance.Equipments.Count + DroppedEquipmentCount ) <= 0 ) ) {
 					shipID = -2;
 				}
+
+//				RecordManager.Instance.ShipDrop.Add( shipID, itemID, eqID, Compass.MapAreaID, Compass.MapInfoID, Compass.Destination, Compass.MapInfo.EventDifficulty, Compass.EventID == 5, enemyFleetData.FleetID, Result.Rank, KCDatabase.Instance.Admiral.Level );
 			}
 
 
