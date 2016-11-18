@@ -143,7 +143,7 @@ namespace ElectronicObserver.Backfire.Observer {
             }
         }
 
-        public void OnResponseReceived(string shortpath, Dictionary<string, string> parsedData)
+        public void OnResponseReceived(string shortpath, dynamic parsedData)
         {
             try
             {
