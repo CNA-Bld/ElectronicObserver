@@ -1,0 +1,1325 @@
+﻿using ElectronicObserver.Utility;
+using ElectronicObserver.Backfire.Utility.Data;
+using ElectronicObserver.Backfire.Utility.Mathematics;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ElectronicObserver.Backfire.Data {
+
+
+	/// <summary>
+	/// 個別の艦娘データを保持します。
+	/// </summary>
+	[DebuggerDisplay( "[{ID}] {KCDatabase.Instance.MasterShips[ShipID].NameWithClass} Lv. {Level}" )]
+	public class ShipData : APIWrapper, IIdentifiable {
+
+
+
+		/// <summary>
+		/// 艦娘を一意に識別するID
+		/// </summary>
+		public int MasterID {
+			get { return (int)RawData.api_id; }
+		}
+
+		/// <summary>
+		/// 並べ替えの順番
+		/// </summary>
+		public int SortID {
+			get { return (int)RawData.api_sortno; }
+		}
+
+		/// <summary>
+		/// 艦船ID
+		/// </summary>
+		public int ShipID {
+			get { return (int)RawData.api_ship_id; }
+		}
+
+		/// <summary>
+		/// レベル
+		/// </summary>
+		public int Level {
+			get { return (int)RawData.api_lv; }
+		}
+
+		/// <summary>
+		/// 累積経験値
+		/// </summary>
+		public int ExpTotal {
+			get { return (int)RawData.api_exp[0]; }
+		}
+
+		/// <summary>
+		/// 次のレベルに達するために必要な経験値
+		/// </summary>
+		public int ExpNext {
+			get { return (int)RawData.api_exp[1]; }
+		}
+
+
+		/// <summary>
+		/// 耐久現在値
+		/// </summary>
+		public int HPCurrent { get; internal set; }
+
+		/// <summary>
+		/// 耐久最大値
+		/// </summary>
+		public int HPMax {
+			get { return (int)RawData.api_maxhp; }
+		}
+
+		/// <summary>
+		/// 射程
+		/// </summary>
+		public int Range {
+			get { return (int)RawData.api_leng; }
+		}
+
+
+		private int[] _slot;
+		/// <summary>
+		/// 装備スロット(ID)
+		/// </summary>
+		public ReadOnlyCollection<int> Slot {
+			get { return Array.AsReadOnly( _slot ); }
+		}
+
+
+		private int[] _slotMaster;
+		/// <summary>
+		/// 装備スロット(マスターID)
+		/// </summary>
+		public ReadOnlyCollection<int> SlotMaster {
+			get { return Array.AsReadOnly( _slotMaster ); }
+		}
+
+		private EquipmentData[] _slotInstance;
+		/// <summary>
+		/// 装備スロット(装備データ)
+		/// </summary>
+		public ReadOnlyCollection<EquipmentData> SlotInstance {
+			get { return Array.AsReadOnly( _slotInstance ); }
+		}
+
+		private EquipmentDataMaster[] _slotInstanceMaster;
+		/// <summary>
+		/// 装備スロット(装備マスターデータ)
+		/// </summary>
+		public ReadOnlyCollection<EquipmentDataMaster> SlotInstanceMaster {
+			get { return Array.AsReadOnly( _slotInstanceMaster ); }
+		}
+
+
+		/// <summary>
+		/// 補強装備スロット(ID)
+		/// 0=未開放, -1=装備なし 
+		/// </summary>
+		public int ExpansionSlot { get; private set; }
+
+		/// <summary>
+		/// 補強装備スロット(マスターID)
+		/// </summary>
+		public int ExpansionSlotMaster {
+			get {
+				if ( ExpansionSlot == 0 )
+					return 0;
+
+				EquipmentData eq = KCDatabase.Instance.Equipments[ExpansionSlot];
+				if ( eq != null )
+					return eq.EquipmentID;
+				else
+					return -1;
+			}
+		}
+
+		/// <summary>
+		/// 補強装備スロット(装備データ)
+		/// </summary>
+		public EquipmentData ExpansionSlotInstance {
+			get { return KCDatabase.Instance.Equipments[ExpansionSlot]; }
+		}
+
+		/// <summary>
+		/// 補強装備スロット(装備マスターデータ)
+		/// </summary>
+		public EquipmentDataMaster ExpansionSlotInstanceMaster {
+			get {
+				EquipmentData eq = ExpansionSlotInstance;
+				return eq != null ? eq.MasterEquipment : null;
+			}
+		}
+
+
+		private int[] _allSlot;
+		/// <summary>
+		/// 全てのスロット(ID)
+		/// </summary>
+		public ReadOnlyCollection<int> AllSlot {
+			get { return Array.AsReadOnly( _allSlot ); }
+		}
+
+		private int[] _allSlotMaster;
+		/// <summary>
+		/// 全てのスロット(マスターID)
+		/// </summary>
+		public ReadOnlyCollection<int> AllSlotMaster {
+			get { return Array.AsReadOnly( _allSlotMaster ); }
+		}
+
+		private EquipmentData[] _allSlotInstance;
+		/// <summary>
+		/// 全てのスロット(装備データ)
+		/// </summary>
+		public ReadOnlyCollection<EquipmentData> AllSlotInstance {
+			get { return Array.AsReadOnly( _allSlotInstance ); }
+		}
+
+		private EquipmentDataMaster[] _allSlotInstanceMaster;
+		/// <summary>
+		/// 全てのスロット(装備マスターデータ)
+		/// </summary>
+		public ReadOnlyCollection<EquipmentDataMaster> AllSlotInstanceMaster {
+			get { return Array.AsReadOnly( _allSlotInstanceMaster ); }
+		}
+
+
+
+		private int[] _aircraft;
+		/// <summary>
+		/// 各スロットの航空機搭載量
+		/// </summary>
+		public ReadOnlyCollection<int> Aircraft {
+			get { return Array.AsReadOnly<int>( _aircraft ); }
+		}
+
+
+		/// <summary>
+		/// 現在の航空機搭載量
+		/// </summary>
+		public int AircraftTotal {
+			get { return _aircraft.Sum( a => Math.Max( a, 0 ) ); }
+		}
+
+
+		/// <summary>
+		/// 搭載燃料
+		/// </summary>
+		public int Fuel { get; internal set; }
+
+		/// <summary>
+		/// 搭載弾薬
+		/// </summary>
+		public int Ammo { get; internal set; }
+
+
+		/// <summary>
+		/// スロットのサイズ
+		/// </summary>
+		public int SlotSize {
+			get { return !RawData.api_slotnum() ? 0 : (int)RawData.api_slotnum; }
+		}
+
+		/// <summary>
+		/// 入渠にかかる時間(ミリ秒)
+		/// </summary>
+		public int RepairTime {
+			get { return (int)RawData.api_ndock_time; }
+		}
+
+		/// <summary>
+		/// 入渠にかかる鋼材
+		/// </summary>
+		public int RepairSteel {
+			get { return (int)RawData.api_ndock_item[1]; }
+		}
+
+		/// <summary>
+		/// 入渠にかかる燃料
+		/// </summary>
+		public int RepairFuel {
+			get { return (int)RawData.api_ndock_item[0]; }
+		}
+
+		/// <summary>
+		/// コンディション
+		/// </summary>
+		public int Condition { get; internal set; }
+
+
+		#region Parameters
+
+		/********************************************************
+		 * 強化値：近代化改修・レベルアップによって上昇した数値
+		 * 総合値：装備込みでのパラメータ
+		 * 基本値：装備なしでのパラメータ(初期値+強化値)
+		 ********************************************************/
+
+		/// <summary>
+		/// 火力強化値
+		/// </summary>
+		public int FirepowerModernized {
+			get { return (int)RawData.api_kyouka[0]; }
+		}
+
+		/// <summary>
+		/// 雷装強化値
+		/// </summary>
+		public int TorpedoModernized {
+			get { return (int)RawData.api_kyouka[1]; }
+		}
+
+		/// <summary>
+		/// 対空強化値
+		/// </summary>
+		public int AAModernized {
+			get { return (int)RawData.api_kyouka[2]; }
+		}
+
+		/// <summary>
+		/// 装甲強化値
+		/// </summary>
+		public int ArmorModernized {
+			get { return (int)RawData.api_kyouka[3]; }
+		}
+
+		/// <summary>
+		/// 運強化値
+		/// </summary>
+		public int LuckModernized {
+			get { return (int)RawData.api_kyouka[4]; }
+		}
+
+
+		/// <summary>
+		/// 火力改修残り
+		/// </summary>
+		public int FirepowerRemain {
+			get { return ( MasterShip.FirepowerMax - MasterShip.FirepowerMin ) - FirepowerModernized; }
+		}
+
+		/// <summary>
+		/// 雷装改修残り
+		/// </summary>
+		public int TorpedoRemain {
+			get { return ( MasterShip.TorpedoMax - MasterShip.TorpedoMin ) - TorpedoModernized; }
+		}
+
+		/// <summary>
+		/// 対空改修残り
+		/// </summary>
+		public int AARemain {
+			get { return ( MasterShip.AAMax - MasterShip.AAMin ) - AAModernized; }
+		}
+
+		/// <summary>
+		/// 装甲改修残り
+		/// </summary>
+		public int ArmorRemain {
+			get { return ( MasterShip.ArmorMax - MasterShip.ArmorMin ) - ArmorModernized; }
+		}
+
+		/// <summary>
+		/// 運改修残り
+		/// </summary>
+		public int LuckRemain {
+			get { return ( MasterShip.LuckMax - MasterShip.LuckMin ) - LuckModernized; }
+		}
+
+
+		/// <summary>
+		/// 火力総合値
+		/// </summary>
+		public int FirepowerTotal {
+			get { return (int)RawData.api_karyoku[0]; }
+		}
+
+		/// <summary>
+		/// 雷装総合値
+		/// </summary>
+		public int TorpedoTotal {
+			get { return (int)RawData.api_raisou[0]; }
+		}
+
+		/// <summary>
+		/// 対空総合値
+		/// </summary>
+		public int AATotal {
+			get { return (int)RawData.api_taiku[0]; }
+		}
+
+		/// <summary>
+		/// 装甲総合値
+		/// </summary>
+		public int ArmorTotal {
+			get { return (int)RawData.api_soukou[0]; }
+		}
+
+		/// <summary>
+		/// 回避総合値
+		/// </summary>
+		public int EvasionTotal {
+			get { return (int)RawData.api_kaihi[0]; }
+		}
+
+		/// <summary>
+		/// 対潜総合値
+		/// </summary>
+		public int ASWTotal {
+			get { return (int)RawData.api_taisen[0]; }
+		}
+
+		/// <summary>
+		/// 索敵総合値
+		/// </summary>
+		public int LOSTotal {
+			get { return (int)RawData.api_sakuteki[0]; }
+		}
+
+		/// <summary>
+		/// 運総合値
+		/// </summary>
+		public int LuckTotal {
+			get { return (int)RawData.api_lucky[0]; }
+		}
+
+		/// <summary>
+		/// 爆装総合値
+		/// </summary>
+		public int BomberTotal {
+			get { return AllSlotInstanceMaster.Sum( s => s == null ? 0 : Math.Max( s.Bomber, 0 ) ); }
+		}
+
+
+		/// <summary>
+		/// 火力基本値
+		/// </summary>
+		public int FirepowerBase {
+			get {
+				return MasterShip.FirepowerMin + FirepowerModernized;
+			}
+		}
+
+		/// <summary>
+		/// 雷装基本値
+		/// </summary>
+		public int TorpedoBase {
+			get {
+				return MasterShip.TorpedoMin + TorpedoModernized;
+			}
+		}
+
+		/// <summary>
+		/// 対空基本値
+		/// </summary>
+		public int AABase {
+			get {
+				return MasterShip.AAMin + AAModernized;
+			}
+		}
+
+		/// <summary>
+		/// 装甲基本値
+		/// </summary>
+		public int ArmorBase {
+			get {
+				return MasterShip.ArmorMin + ArmorModernized;
+			}
+		}
+
+		/// <summary>
+		/// 回避基本値
+		/// </summary>
+		public int EvasionBase {
+			get {
+				/*
+				ShipDataMaster ship = KCDatabase.Instance.MasterShips[ShipID];
+				return ship.EvasionMin + ( ship.EvasionMax - ship.EvasionMin ) * Level / 99;
+				*/
+				int param = EvasionTotal;
+				foreach ( var eq in AllSlotInstance ) {
+					if ( eq != null )
+						param -= eq.MasterEquipment.Evasion;
+				}
+				return param;
+			}
+		}
+
+		/// <summary>
+		/// 対潜基本値
+		/// </summary>
+		public int ASWBase {
+			get {
+				int param = ASWTotal;
+				foreach ( var eq in AllSlotInstance ) {
+					if ( eq != null )
+						param -= eq.MasterEquipment.ASW;
+				}
+				return param;
+			}
+		}
+
+		/// <summary>
+		/// 索敵基本値
+		/// </summary>
+		public int LOSBase {
+			get {
+				int param = LOSTotal;
+				foreach ( var eq in AllSlotInstance ) {
+					if ( eq != null )
+						param -= eq.MasterEquipment.LOS;
+				}
+				return param;
+			}
+		}
+
+		/// <summary>
+		/// 運基本値
+		/// </summary>
+		public int LuckBase {
+			get {
+				return MasterShip.LuckMin + LuckModernized;
+			}
+		}
+
+
+		/// <summary>
+		/// 回避最大値
+		/// </summary>
+		public int EvasionMax {
+			get { return (int)RawData.api_kaihi[1]; }
+		}
+
+		/// <summary>
+		/// 対潜最大値
+		/// </summary>
+		public int ASWMax {
+			get { return (int)RawData.api_taisen[1]; }
+		}
+
+		/// <summary>
+		/// 索敵最大値
+		/// </summary>
+		public int LOSMax {
+			get { return (int)RawData.api_sakuteki[1]; }
+		}
+
+		#endregion
+
+
+		/// <summary>
+		/// 保護ロックの有無
+		/// </summary>
+		public bool IsLocked {
+			get { return (int)RawData.api_locked != 0; }
+		}
+
+		/// <summary>
+		/// 装備による保護ロックの有無
+		/// </summary>
+		public bool IsLockedByEquipment {
+			get { return (int)RawData.api_locked_equip != 0; }
+		}
+
+
+		//*/
+		/// <summary>
+		/// 出撃海域
+		/// </summary>
+		public int SallyArea {
+			get {
+				return RawData.api_sally_area() ? (int)RawData.api_sally_area : -1;
+			}
+		}
+		//*/
+
+
+		/// <summary>
+		/// 艦船のマスターデータへの参照
+		/// </summary>
+		public ShipDataMaster MasterShip {
+			get {
+				return KCDatabase.Instance.MasterShips[ShipID];
+			}
+		}
+
+		/// <summary>
+		/// 入渠中のドックID　非入渠時は-1
+		/// </summary>
+		public int RepairingDockID {
+			get {
+				foreach ( var dock in KCDatabase.Instance.Docks.Values ) {
+					if ( dock.ShipID == MasterID )
+						return dock.DockID;
+				}
+				return -1;
+			}
+		}
+
+		/// <summary>
+		/// 所属艦隊　-1=なし
+		/// </summary>
+		public int Fleet {
+			get {
+				FleetManager fm = KCDatabase.Instance.Fleet;
+				foreach ( var f in fm.Fleets.Values ) {
+					if ( f.Members.Contains( MasterID ) )
+						return f.FleetID;
+				}
+				return -1;
+			}
+		}
+
+
+		/// <summary>
+		/// 所属艦隊及びその位置
+		/// ex. 1-3 (位置も1から始まる)
+		/// 所属していなければ 空文字列
+		/// </summary>
+		public string FleetWithIndex {
+			get {
+				FleetManager fm = KCDatabase.Instance.Fleet;
+				foreach ( var f in fm.Fleets.Values ) {
+					int index = f.Members.IndexOf( MasterID );
+					if ( index != -1 ) {
+						return string.Format( "{0}-{1}", f.FleetID, index + 1 );
+					}
+				}
+				return "";
+			}
+
+		}
+
+
+		/// <summary>
+		/// ケッコン済みかどうか
+		/// </summary>
+		public bool IsMarried {
+			get { return Level > 99; }
+		}
+
+
+		/// <summary>
+		/// 次の改装まで必要な経験値
+		/// </summary>
+		public int ExpNextRemodel {
+			get {
+				ShipDataMaster master = MasterShip;
+				if ( master.RemodelAfterShipID <= 0 )
+					return 0;
+				return Math.Max( ExpTable.ShipExp[master.RemodelAfterLevel].Total - ExpTotal, 0 );
+			}
+		}
+
+
+		/// <summary>
+		/// 艦名
+		/// </summary>
+		public string Name {
+			get { return MasterShip.Name; }
+		}
+
+
+		/// <summary>
+		/// 艦名(レベルを含む)
+		/// </summary>
+		public string NameWithLevel {
+			get { return string.Format( "{0} Lv. {1}", MasterShip.Name, Level ); }
+		}
+
+
+		/// <summary>
+		/// HP/HPmax
+		/// </summary>
+		public double HPRate {
+			get {
+				if ( HPMax <= 0 ) return 0.0;
+				return (double)HPCurrent / HPMax;
+			}
+		}
+
+
+		/// <summary>
+		/// 最大搭載燃料
+		/// </summary>
+		public int FuelMax {
+			get { return MasterShip.Fuel; }
+		}
+
+		/// <summary>
+		/// 最大搭載弾薬
+		/// </summary>
+		public int AmmoMax {
+			get { return MasterShip.Ammo; }
+		}
+
+
+		/// <summary>
+		/// 燃料残量割合
+		/// </summary>
+		public double FuelRate {
+			get { return (double)Fuel / Math.Max( FuelMax, 1 ); }
+		}
+
+		/// <summary>
+		/// 弾薬残量割合
+		/// </summary>
+		public double AmmoRate {
+			get { return (double)Ammo / Math.Max( AmmoMax, 1 ); }
+		}
+
+
+		/// <summary>
+		/// 搭載機残量割合
+		/// </summary>
+		public ReadOnlyCollection<double> AircraftRate {
+			get {
+				double[] airs = new double[_aircraft.Length];
+				var airmax = MasterShip.Aircraft;
+
+				for ( int i  = 0; i < airs.Length; i++ ) {
+					airs[i] = (double)_aircraft[i] / Math.Max( airmax[i], 1 );
+				}
+
+				return Array.AsReadOnly( airs );
+			}
+		}
+
+		/// <summary>
+		/// 搭載機残量割合
+		/// </summary>
+		public double AircraftTotalRate {
+			get { return (double)AircraftTotal / Math.Max( MasterShip.AircraftTotal, 1 ); }
+		}
+
+
+
+
+
+		/// <summary>
+		/// 補強装備スロットが使用可能か
+		/// </summary>
+		public bool IsExpansionSlotAvailable {
+			get { return ExpansionSlot != 0; }
+		}
+
+
+
+		#region ダメージ威力計算
+
+		/// <summary>
+		/// 航空戦威力
+		/// 本来スロットごとのものであるが、ここでは最大火力を採用する
+		/// </summary>
+		public int AirBattlePower { get { return _airbattlePowers.Max(); } }
+
+		private int[] _airbattlePowers;
+		/// <summary>
+		/// 各スロットの航空戦威力
+		/// </summary>
+		public ReadOnlyCollection<int> AirBattlePowers { get { return Array.AsReadOnly( _airbattlePowers ); } }
+
+		/// <summary>
+		/// 砲撃威力
+		/// </summary>
+		public int ShellingPower { get; private set; }
+
+		//todo: ShellingPower に統合予定
+		/// <summary>
+		/// 空撃威力
+		/// </summary>
+		public int AircraftPower { get; private set; }
+
+		/// <summary>
+		/// 対潜威力
+		/// </summary>
+		public int AntiSubmarinePower { get; private set; }
+
+		/// <summary>
+		/// 雷撃威力
+		/// </summary>
+		public int TorpedoPower { get; private set; }
+
+		/// <summary>
+		/// 夜戦威力
+		/// </summary>
+		public int NightBattlePower { get; private set; }
+
+
+
+		/// <summary>
+		/// 装備改修補正(砲撃戦)
+		/// </summary>
+		private double GetDayBattleEquipmentLevelBonus() {
+
+			double basepower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 3:		// 大口径主砲
+					case 38:
+						basepower += Math.Sqrt( slot.Level ) * 1.5;
+						break;
+					case 14:	// ソナー
+					case 15:	// 爆雷
+						basepower += Math.Sqrt( slot.Level ) * 0.75;
+						break;
+					case 5:		// 魚雷
+					case 10:	// 水上偵察機
+					case 12:	// 小型電探
+					case 13:	// 大型電探
+					case 32:	// 潜水艦魚雷
+						break;	//  → 無視
+					default:
+						basepower += Math.Sqrt( slot.Level );
+						break;
+				}
+			}
+			return basepower;
+		}
+
+		/// <summary>
+		/// 装備改修補正(空撃)
+		/// </summary>
+		/// <returns></returns>
+		private double GetAircraftEquipmentLevelBonus() {
+
+			double basepower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 4:		// 副砲
+						basepower += Math.Sqrt( slot.Level );
+						break;
+				}
+			}
+			return basepower;
+		}
+
+		/// <summary>
+		/// 装備改修補正(雷撃戦)
+		/// </summary>
+		private double GetTorpedoEquipmentLevelBonus() {
+			double basepower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 5:		// 魚雷
+					case 21:	// 機銃
+					case 32:	// 潜水艦魚雷
+						basepower += Math.Sqrt( slot.Level ) * 1.2;
+						break;
+				}
+			}
+			return basepower;
+		}
+
+		/// <summary>
+		/// 装備改修補正(対潜)
+		/// </summary>
+		private double GetAntiSubmarineEquipmentLevelBonus() {
+			double basepower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 14:	// 爆雷
+					case 15:	// ソナー
+						basepower += Math.Sqrt( slot.Level ) * 1.2;
+						break;
+				}
+			}
+			return basepower;
+		}
+
+		/// <summary>
+		/// 装備改修補正(夜戦)
+		/// </summary>
+		private double GetNightBattleEquipmentLevelBonus() {
+			double basepower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 1:		// 小口径主砲
+					case 2:		// 中口径主砲
+					case 3:		// 大口径主砲
+					case 4:		// 副砲
+					case 5:		// 魚雷
+					case 19:	// 徹甲弾
+					case 24:	// 上陸用舟艇
+					case 29:	// 探照灯
+					case 32:	// 潜水艦魚雷
+					case 36:	// 高射装置
+					case 38:	// 大口径主砲(II)
+					case 42:	// 大型探照灯
+					case 46:	// 特型内火艇
+						basepower += Math.Sqrt( slot.Level );
+						break;
+				}
+			}
+			return basepower;
+		}
+
+		/// <summary>
+		/// 耐久値による攻撃力補正
+		/// </summary>
+		private double GetHPDamageBonus() {
+			if ( HPRate < 0.25 )
+				return 0.4;
+			else if ( HPRate < 0.5 )
+				return 0.7;
+			else
+				return 1.0;
+		}
+
+		/// <summary>
+		/// 交戦形態による威力補正
+		/// </summary>
+		private double GetEngagementFormDamageRate( int form ) {
+			switch ( form ) {
+				case 1:		// 同航戦
+				default:
+					return 1.0;
+				case 2:		// 反航戦
+					return 0.8;
+				case 3:		// T字有利
+					return 1.2;
+				case 4:		// T字不利
+					return 0.6;
+			}
+		}
+
+		/// <summary>
+		/// 残り弾薬量による威力補正
+		/// <returns></returns>
+		private double GetAmmoDamageRate() {
+			return Math.Min( AmmoRate * 2, 1 );
+		}
+
+		/// <summary>
+		/// 連合艦隊編成における砲撃戦火力補正
+		/// </summary>
+		private double GetCombinedFleetShellingDamageBonus() {
+			int fleet = Fleet;
+			if ( fleet == -1 || fleet > 2 )
+				return 0;
+
+			switch ( KCDatabase.Instance.Fleet.CombinedFlag ) {
+				case 1:		//機動部隊
+					if ( fleet == 1 )
+						return +2;
+					else
+						return +10;
+
+				case 2:		//水上部隊
+					if ( fleet == 1 )
+						return +10;
+					else
+						return -5;
+
+				case 3:		//輸送部隊
+					if ( fleet == 1 )
+						return -5;
+					else
+						return +10;
+
+				default:
+					return 0;
+			}
+		}
+
+		/// <summary>
+		/// 連合艦隊編成における雷撃戦火力補正
+		/// </summary>
+		private double GetCombinedFleetTorpedoDamageBonus() {
+			int fleet = Fleet;
+			if ( fleet == -1 || fleet > 2 )
+				return 0;
+
+			if ( KCDatabase.Instance.Fleet.CombinedFlag == 0 )
+				return 0;
+
+			return -5;
+		}
+
+		/// <summary>
+		/// 軽巡軽量砲補正
+		/// </summary>
+		private double GetLightCruiserDamageBonus() {
+			if ( MasterShip.ShipType == 3 ||
+				MasterShip.ShipType == 4 ||
+				MasterShip.ShipType == 21 ) {	//軽巡/雷巡/練巡
+
+				int single = 0;
+				int twin = 0;
+
+				foreach ( var slot in SlotMaster ) {
+					if ( slot == -1 ) continue;
+
+					switch ( slot ) {
+						case 4:		//14cm単装砲
+						case 11:	//15.2cm単装砲
+							single++;
+							break;
+						case 65:	//15.2cm連装砲
+						case 119:	//14cm連装砲
+						case 139:	//15.2cm連装砲改
+							twin++;
+							break;
+					}
+				}
+
+				return Math.Sqrt( twin ) * 2.0 + Math.Sqrt( single );
+			}
+
+			return 0;
+		}
+
+		private double CapDamage( double damage, int max ) {
+			if ( damage < max )
+				return damage;
+			else
+				return max + Math.Sqrt( damage - max );
+		}
+
+
+		/// <summary>
+		/// 航空戦での威力を求めます。
+		/// </summary>
+		/// <param name="slotIndex">スロットのインデックス。 0 起点です。</param>
+		private int CalculateAirBattlePower( int slotIndex ) {
+			double basepower = 0;
+			var slots = SlotInstance;
+
+			var eq = SlotInstance[slotIndex];
+
+			if ( eq == null || _aircraft[slotIndex] == 0 )
+				return 0;
+
+			switch ( eq.MasterEquipment.CategoryType ) {
+				case 7:		//艦爆
+				case 11:	//水爆
+					basepower = eq.MasterEquipment.Bomber * Math.Sqrt( _aircraft[slotIndex] ) + 25;
+					break;
+				case 8:		//艦攻
+					// 150% 補正を引いたとする
+					basepower = ( eq.MasterEquipment.Torpedo * Math.Sqrt( _aircraft[slotIndex] ) + 25 ) * 1.5;
+					break;
+				default:
+					return 0;
+			}
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 150 ) );
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+		/// <summary>
+		/// 砲撃戦での砲撃威力を求めます。
+		/// </summary>
+		/// <param name="engagementForm">交戦形態。既定値は 1 (同航戦) です。</param>
+		private int CalculateShellingPower( int engagementForm = 1 ) {
+			if ( Calculator.GetDayAttackKind( SlotMaster.ToArray(), ShipID, -1, false ) != 0 )
+				return 0;		//砲撃以外は除外
+
+			double basepower = FirepowerTotal + GetDayBattleEquipmentLevelBonus() + GetCombinedFleetShellingDamageBonus() + 5;
+
+			basepower *= GetHPDamageBonus() * GetEngagementFormDamageRate( engagementForm );
+
+			basepower += GetLightCruiserDamageBonus();
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 150 ) );
+
+			//弾着
+			switch ( Calculator.GetDayAttackKind( SlotMaster.ToArray(), ShipID, -1 ) ) {
+				case 2:		//連撃
+				case 4:		//主砲/電探
+					basepower *= 1.2;
+					break;
+				case 3:		//主砲/副砲
+					basepower *= 1.1;
+					break;
+				case 5:		//主砲/徹甲弾
+					basepower *= 1.3;
+					break;
+				case 6:		//主砲/主砲
+					basepower *= 1.5;
+					break;
+			}
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+		/// <summary>
+		/// 砲撃戦での空撃威力を求めます。
+		/// </summary>
+		/// <param name="engagementForm">交戦形態。既定値は 1 (同航戦) です。</param>
+		private int CalculateAircraftPower( int engagementForm = 1 ) {
+			if ( Calculator.GetDayAttackKind( SlotMaster.ToArray(), ShipID, -1, false ) != 7 )
+				return 0;		//空撃以外は除外
+
+			double basepower = Math.Floor( ( FirepowerTotal + TorpedoTotal + Math.Floor( BomberTotal * 1.3 ) + GetAircraftEquipmentLevelBonus() + GetCombinedFleetShellingDamageBonus() ) * 1.5 ) + 55;
+
+			basepower *= GetHPDamageBonus() * GetEngagementFormDamageRate( engagementForm );
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 150 ) );
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+		/// <summary>
+		/// 砲撃戦での対潜威力を求めます。
+		/// </summary>
+		/// <param name="engagementForm">交戦形態。既定値は 1 (同航戦) です。</param>
+		private int CalculateAntiSubmarinePower( int engagementForm = 1 ) {
+			if ( !Calculator.CanAttackSubmarine( this ) )
+				return 0;
+
+			double eqpower = 0;
+			foreach ( var slot in SlotInstance ) {
+				if ( slot == null )
+					continue;
+
+				switch ( slot.MasterEquipment.CategoryType ) {
+					case 7:		//艦爆
+					case 8:		//艦攻
+					case 11:	//水爆
+					case 14:	//ソナー
+					case 15:	//爆雷
+					case 25:	//オートジャイロ
+					case 26:	//対潜哨戒機
+					case 40:	//大型ソナー
+						eqpower += slot.MasterEquipment.ASW;
+						break;
+				}
+			}
+
+			double basepower = Math.Sqrt( ASWBase ) * 2 + eqpower * 1.5 + GetAntiSubmarineEquipmentLevelBonus();
+			if ( Calculator.GetDayAttackKind( SlotMaster.ToArray(), ShipID, 126, false ) == 7 ) {		//126=伊168; 対潜攻撃が空撃なら
+				basepower += 8;
+			} else {	//爆雷攻撃なら
+				basepower += 13;
+			}
+
+
+			basepower *= GetHPDamageBonus() * GetEngagementFormDamageRate( engagementForm );
+
+			//対潜シナジー
+			if ( SlotInstanceMaster.Where( s => s != null && ( s.CategoryType == 14 || s.CategoryType == 40 ) ).Any() &&		//ソナー or 大型ソナー
+				 SlotInstanceMaster.Where( s => s != null && s.CategoryType == 15 ).Any() )			//爆雷
+				basepower *= 1.15;
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 100 ) );
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+		/// <summary>
+		/// 雷撃戦での威力を求めます。
+		/// </summary>
+		/// <param name="engagementForm">交戦形態。既定値は 1 (同航戦) です。</param>
+		private int CalculateTorpedoPower( int engagementForm = 1 ) {
+			if ( TorpedoBase == 0 )
+				return 0;		//雷撃不能艦は除外
+
+			double basepower = TorpedoTotal + GetTorpedoEquipmentLevelBonus() + GetCombinedFleetTorpedoDamageBonus() + 5;
+
+			basepower *= GetHPDamageBonus() * GetEngagementFormDamageRate( engagementForm );		//開幕雷撃は中大破補正が違うが見なかったことに
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 150 ) );
+
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+		/// <summary>
+		/// 夜戦での威力を求めます。
+		/// </summary>
+		private int CalculateNightBattlePower() {
+			double basepower = FirepowerTotal + TorpedoTotal + GetNightBattleEquipmentLevelBonus();
+
+			basepower *= GetHPDamageBonus();
+
+			switch ( Calculator.GetNightAttackKind( SlotMaster.ToArray(), ShipID, -1 ) ) {
+				case 1:	//連撃
+					basepower *= 1.2;
+					break;
+				case 2:	//主砲/魚雷
+					basepower *= 1.3;
+					break;
+				case 3:	//魚雷x2
+					basepower *= 1.5;
+					break;
+				case 4:	//主砲x2/副砲
+					basepower *= 1.75;
+					break;
+				case 5:	//主砲x3
+					basepower *= 2.0;
+					break;
+			}
+
+			basepower += GetLightCruiserDamageBonus();
+
+			//キャップ
+			basepower = Math.Floor( CapDamage( basepower, 300 ) );
+
+
+			return (int)( basepower * GetAmmoDamageRate() );
+		}
+
+
+		/// <summary>
+		/// 威力系の計算をまとめて行い、プロパティを更新します。
+		/// </summary>
+		private void CalculatePowers() {
+
+			int form = Configuration.Config.Control.PowerEngagementForm;
+
+			_airbattlePowers = _slot.Select( ( _, i ) => CalculateAirBattlePower( i ) ).ToArray();
+			ShellingPower = CalculateShellingPower( form );
+			AircraftPower = CalculateAircraftPower( form );
+			AntiSubmarinePower = CalculateAntiSubmarinePower( form );
+			TorpedoPower = CalculateTorpedoPower( form );
+			NightBattlePower = CalculateNightBattlePower();
+
+		}
+
+		private void UpdateSlot( int[] slot ) {
+			_slot = slot;
+
+			if ( _slot != null ) {
+				_slotMaster = new int[_slot.Length];
+				_slotInstance = new EquipmentData[_slot.Length];
+				_slotInstanceMaster = new EquipmentDataMaster[_slot.Length];
+
+				_allSlot = new int[_slot.Length + 1];
+				_allSlotMaster = new int[_slot.Length + 1];
+				_allSlotInstance = new EquipmentData[_slot.Length + 1];
+				_allSlotInstanceMaster = new EquipmentDataMaster[_slot.Length + 1];
+
+				for ( int i = 0; i < _slot.Length; i++ ) {
+					_allSlot[i] = _slot[i];
+					_slotInstance[i] =
+					_allSlotInstance[i] = KCDatabase.Instance.Equipments[_slot[i]];
+					_slotInstanceMaster[i] =
+					_allSlotInstanceMaster[i] = _slotInstance[i] != null ? _slotInstance[i].MasterEquipment : null;
+					_slotMaster[i] =
+					_allSlotMaster[i] = _slotInstanceMaster[i] != null ? _slotInstanceMaster[i].EquipmentID : -1;
+				}
+
+				_allSlot[_slot.Length - 1] = ExpansionSlot;
+				_allSlotMaster[_slot.Length - 1] = ExpansionSlotMaster;
+				_allSlotInstance[_slot.Length - 1] = ExpansionSlotInstance;
+				_allSlotInstanceMaster[_slot.Length - 1] = ExpansionSlotInstanceMaster;
+
+			} else {
+				_slotMaster = null;
+				_slotInstance = null;
+				_slotInstanceMaster = null;
+				_allSlot = null;
+				_allSlotMaster = null;
+				_allSlotInstance = null;
+				_allSlotInstanceMaster = null;
+			}
+		}
+
+
+		#endregion
+
+
+
+
+		public int ID {
+			get { return MasterID; }
+		}
+
+
+		public override void LoadFromResponse( string apiname, dynamic data ) {
+
+			switch ( apiname ) {
+				default:
+					base.LoadFromResponse( apiname, (object)data );
+
+					HPCurrent = (int)RawData.api_nowhp;
+					Fuel = (int)RawData.api_fuel;
+					Ammo = (int)RawData.api_bull;
+					Condition = (int)RawData.api_cond;
+					ExpansionSlot = (int)RawData.api_slot_ex;
+					UpdateSlot( (int[])RawData.api_slot );
+					_aircraft = (int[])RawData.api_onslot;
+					break;
+
+				case "api_req_hokyu/charge":
+					Fuel = (int)data.api_fuel;
+					Ammo = (int)data.api_bull;
+					_aircraft = (int[])data.api_onslot;
+					break;
+
+				case "api_req_kaisou/slot_exchange_index":
+					UpdateSlot( (int[])data.api_slot );
+					break;
+			}
+
+			CalculatePowers();
+		}
+
+
+		public override void LoadFromRequest( string apiname, Dictionary<string, string> data ) {
+			base.LoadFromRequest( apiname, data );
+
+			KCDatabase db = KCDatabase.Instance;
+
+			switch ( apiname ) {
+				case "api_req_kousyou/destroyship": {
+
+						for ( int i = 0; i < _slot.Length; i++ ) {
+							if ( _slot[i] == -1 ) continue;
+							db.Equipments.Remove( _slot[i] );
+						}
+					} break;
+
+				case "api_req_kaisou/open_exslot":
+					ExpansionSlot = -1;
+					break;
+			}
+		}
+
+
+		/// <summary>
+		/// 入渠完了時の処理を行います。
+		/// </summary>
+		internal void Repair() {
+
+			HPCurrent = HPMax;
+			Condition = Math.Max( Condition, 40 );
+
+			RawData.api_ndock_time = 0;
+			RawData.api_ndock_item[0] = 0;
+			RawData.api_ndock_item[1] = 0;
+
+		}
+
+	}
+
+}
+

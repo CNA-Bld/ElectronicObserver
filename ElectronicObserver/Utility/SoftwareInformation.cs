@@ -45,7 +45,7 @@ namespace ElectronicObserver.Utility {
 		/// </summary>
 		public static string VersionEnglish {
 			get {
-				return "2.3.4";
+				return "2.4.4.2.backfire.f2a7c65a";
 			}
 		}
 
