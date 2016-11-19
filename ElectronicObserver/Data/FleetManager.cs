@@ -105,7 +105,7 @@ namespace ElectronicObserver.Data {
 			switch ( apiname ) {
 				case "api_req_hensei/change": {
 						int memberID = int.Parse( data["api_ship_idx"] );		//変更スロット
-						if ( memberID != -1 )
+						if ( memberID != -1 && !data.ContainsKey("replaced_id") )
 							data.Add( "replaced_id", Fleets[int.Parse( data["api_id"] )].Members[memberID].ToString() );
 
 						foreach ( int i in Fleets.Keys )
