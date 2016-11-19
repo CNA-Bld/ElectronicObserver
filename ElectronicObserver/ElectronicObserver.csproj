@@ -101,6 +101,8 @@
     <Compile Include="Backfire\Data\Battle\BattleAirRaid.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedAirBattle.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedAirRaid.cs" />
+    <Compile Include="Backfire\Data\Battle\BattleCombinedEachDay.cs" />
+    <Compile Include="Backfire\Data\Battle\BattleCombinedEachWater.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedNightOnly.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedNormalDay.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedNormalNight.cs" />
@@ -203,6 +205,8 @@
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\battle.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\battleresult.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\battle_water.cs" />
+    <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\each_battle.cs" />
+    <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\each_battle_water.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\ec_battle.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\ec_midnight_battle.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_combined_battle\goback_port.cs" />

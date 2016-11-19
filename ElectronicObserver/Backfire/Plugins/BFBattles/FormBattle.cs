@@ -15,8 +15,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using BFBattles.Dialog;
 using ElectronicObserver.Window;
 using WeifenLuo.WinFormsUI.Docking;
 using ContentAlignment = System.Drawing.ContentAlignment;
@@ -114,6 +112,8 @@ namespace BFBattles {
 			o.APIList["api_req_combined_battle/ld_airbattle"].ResponseReceived += Updated;
 			o.APIList["api_req_combined_battle/ec_battle"].ResponseReceived += Updated;
 			o.APIList["api_req_combined_battle/ec_midnight_battle"].ResponseReceived += Updated;
+			o.APIList["api_req_combined_battle/each_battle"].ResponseReceived += Updated;
+			o.APIList["api_req_combined_battle/each_battle_water"].ResponseReceived += Updated;
 			o.APIList["api_req_combined_battle/battleresult"].ResponseReceived += Updated;
 			o.APIList["api_req_practice/battle"].ResponseReceived += Updated;
 			o.APIList["api_req_practice/midnight_battle"].ResponseReceived += Updated;
@@ -128,6 +128,7 @@ namespace BFBattles {
 
 			KCDatabase db = KCDatabase.Instance;
 			BattleManager bm = db.Battle;
+			bool hideDuringBattle = false;
 
 			BaseLayoutPanel.SuspendLayout();
 			TableTop.SuspendLayout();
@@ -153,7 +154,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleDay );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_battle_midnight/battle":
@@ -163,7 +164,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleNight );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_battle_midnight/sp_midnight": {
@@ -176,7 +177,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleNight );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_sortie/airbattle": {
@@ -188,13 +189,15 @@ namespace BFBattles {
 						SetHPBar( bm.BattleDay );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_combined_battle/battle":
 				case "api_req_combined_battle/battle_water":
 				case "api_req_combined_battle/ld_airbattle":
-				case "api_req_combined_battle/ec_battle": {
+				case "api_req_combined_battle/ec_battle": 
+				case "api_req_combined_battle/each_battle":	
+				case "api_req_combined_battle/each_battle_water":	{
 
 						SetFormation( bm.BattleDay );
 						SetSearchingResult( bm.BattleDay );
@@ -203,7 +206,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleDay );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_combined_battle/airbattle": {
@@ -215,7 +218,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleDay );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_combined_battle/midnight_battle":
@@ -225,7 +228,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleNight );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 				case "api_req_combined_battle/sp_midnight": {
@@ -238,7 +241,7 @@ namespace BFBattles {
 						SetHPBar( bm.BattleNight );
 						SetDamageRate( bm );
 
-						BaseLayoutPanel.Visible = true;
+						BaseLayoutPanel.Visible = !hideDuringBattle;
 					} break;
 
 
@@ -762,7 +765,7 @@ namespace BFBattles {
 				if ( initialHPs[i] != -1 ) {
 					HPBars[i].Value = resultHPs[i];
 					HPBars[i].PrevValue = initialHPs[i];
-					HPBars[i].MaximumValue = maxHPs[i];
+					HPBars[i].MaximumValue = Math.Max( maxHPs[i], GetBattleShipMaxHP( bd, i ) );		// todo: 暫定処理 メソッドのコメント参照
 					HPBars[i].BackColor = SystemColors.Control;
 					HPBars[i].Visible = true;
 				} else {
@@ -904,6 +907,23 @@ namespace BFBattles {
 				HPBars[12 + i].BackColor = Color.Moccasin;
 		}
 
+
+		/// <summary>
+		/// 2016/11/19 現在、連合艦隊夜戦において 最大HP = 現在HP となる不具合が存在するため、
+		/// 暫定的にマスターデータから最大HPを取得する
+		/// </summary>
+		private int GetBattleShipMaxHP( BattleData bd, int index ) {
+			if ( index < 6 ) {
+				return bd.Initial.FriendFleet.MembersInstance[index].HPMax;
+			} else if ( index < 12 ) {
+				return bd.Initial.EnemyMembersInstance[index - 6].HPMax;
+			} else if ( index < 18 ) {
+				return bd.Initial.FriendFleetEscort.MembersInstance[index - 12].HPMax;
+			} else if ( index < 24 ) {
+				return bd.Initial.EnemyMembersEscortInstance[index - 18].HPMax;
+			}
+			throw new ArgumentException( "Wrong index" );
+		}
 
 
 		/// <summary>
@@ -1093,8 +1113,7 @@ namespace BFBattles {
 			if ( bm == null || bm.BattleMode == BattleManager.BattleModes.Undefined )
 				return;
 
-            var dialog = new DialogBattleDetail();
-//			var dialog = new VisualStyleElement.Window.Dialog.DialogBattleDetail();
+			var dialog = new Dialog.DialogBattleDetail();
 
 			dialog.BattleDetailText = BattleDetailDescriptor.GetBattleDetail( bm );
 			dialog.Location = RightClickMenu.Location;
