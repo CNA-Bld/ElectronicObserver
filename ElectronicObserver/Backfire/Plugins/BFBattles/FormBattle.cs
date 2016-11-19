@@ -1137,7 +1137,7 @@ namespace BFBattles {
 
 
 		public override string GetPersistString() {
-			return "Battle";
+			return "BFBattle";
 		}
 
 
