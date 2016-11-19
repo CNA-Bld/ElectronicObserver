@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
-namespace ElectronicObserver.Backfire.Utility.Data {
+namespace ElectronicObserver.Backfire.BFUtility.Data {
 
 	/// <summary>
 	/// 経験値テーブルを管理します。

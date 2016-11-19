@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectronicObserver.Backfire.Utility.Mathematics {
+namespace ElectronicObserver.Backfire.BFUtility.Mathematics {
 
 	/// <summary>
 	/// 日時データを扱うためのメソッド群です。

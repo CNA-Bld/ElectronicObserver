@@ -1,4 +1,4 @@
-﻿using ElectronicObserver.Backfire.Utility.Mathematics;
+﻿using ElectronicObserver.Backfire.BFUtility.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -32,12 +32,12 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kousyou {
 				if ( eq != null ) {
 					eq.LoadFromResponse( APIName, data.api_after_slot );
 
-					if ( ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler )
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0} への改修に成功しました。", eq.NameWithLevel ) );
+					if ( Utility.Configuration.Config.Log.ShowSpoiler )
+						Utility.Logger.Add( 2, string.Format( "{0} への改修に成功しました。", eq.NameWithLevel ) );
 				}
 
-			} else if ( ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler ) {
-				ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0} の改修に失敗しました。", db.Equipments[_equipmentID].NameWithLevel ) );
+			} else if ( Utility.Configuration.Config.Log.ShowSpoiler ) {
+				Utility.Logger.Add( 2, string.Format( "{0} の改修に失敗しました。", db.Equipments[_equipmentID].NameWithLevel ) );
 			}
 
 

@@ -29,7 +29,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kaisou {
 						db.Equipments.Remove( ship.Slot[i] );
 				}
 
-				ElectronicObserver.Utility.Logger.Add( 2, ship.NameWithLevel + " を除籍しました。" );
+				Utility.Logger.Add( 2, ship.NameWithLevel + " を除籍しました。" );
 				db.Ships.Remove( shipID );
 
 			}
@@ -47,9 +47,9 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kaisou {
 
 			if ( ship != null ) {
 
-				if ( ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler ) {
+				if ( Utility.Configuration.Config.Log.ShowSpoiler ) {
 					if ( (int)data.api_powerup_flag == 0 ) {
-						ElectronicObserver.Utility.Logger.Add( 2, ship.NameWithLevel + " の近代化改修に失敗しました。" );
+						Utility.Logger.Add( 2, ship.NameWithLevel + " の近代化改修に失敗しました。" );
 
 					} else {
 						var updated_ship = new ShipData();
@@ -77,7 +77,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kaisou {
 							contents.AddLast( "運+" + luck );
 
 						sb.AppendFormat( string.Join( ", ", contents ) + " )" );
-						ElectronicObserver.Utility.Logger.Add( 2, sb.ToString() );
+						Utility.Logger.Add( 2, sb.ToString() );
 					}
 				}
 				ship.LoadFromResponse( APIName, data.api_ship );

@@ -51,7 +51,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_hokyu {
 
 
 				sb.Remove( sb.Length - 2, 2 );
-				ElectronicObserver.Utility.Logger.Add( 2, sb.ToString() );
+				Utility.Logger.Add( 2, sb.ToString() );
 			}
 
 

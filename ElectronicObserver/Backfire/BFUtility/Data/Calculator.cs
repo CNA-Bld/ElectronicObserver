@@ -1,13 +1,13 @@
 ﻿using ElectronicObserver.Backfire.Data;
 using ElectronicObserver.Resource.Record;
-using ElectronicObserver.Backfire.Utility.Mathematics;
+using ElectronicObserver.Backfire.BFUtility.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElectronicObserver.Backfire.Utility.Data {
+namespace ElectronicObserver.Backfire.BFUtility.Data {
 
 	/// <summary>
 	/// 汎用計算クラス

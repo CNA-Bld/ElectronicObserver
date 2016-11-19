@@ -23,7 +23,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kousyou {
 
 			ShipData ship = db.Ships[shipID];
 			
-			ElectronicObserver.Utility.Logger.Add( 2, ship.NameWithLevel + " を解体しました。" );
+			Utility.Logger.Add( 2, ship.NameWithLevel + " を解体しました。" );
 
 			for ( int i = 0; i < ship.Slot.Count; i++ ) {
 				if ( ship.Slot[i] != -1 )

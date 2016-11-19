@@ -40,18 +40,18 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_kousyou {
 			db.Material.LoadFromResponse( APIName, data.api_material );
 			
 			//logging
-			if ( ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler ) {
+			if ( Utility.Configuration.Config.Log.ShowSpoiler ) {
 				if ( (int)data.api_create_flag != 0 ) {
 
 					int eqid = (int)data.api_slot_item.api_slotitem_id;
 
-					ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0}「{1}」の開発に成功しました。({2}/{3}/{4}/{5} 秘書艦: {6})",
+					Utility.Logger.Add( 2, string.Format( "{0}「{1}」の開発に成功しました。({2}/{3}/{4}/{5} 秘書艦: {6})",
 						db.MasterEquipments[eqid].CategoryTypeInstance.Name, 
 						db.MasterEquipments[eqid].Name,
 						materials[0], materials[1], materials[2], materials[3],
 						db.Fleet[1].MembersInstance[0].NameWithLevel ) );
 				} else {
-					ElectronicObserver.Utility.Logger.Add( 2, string.Format( "開発に失敗しました。({0}/{1}/{2}/{3} 秘書艦: {4})",
+					Utility.Logger.Add( 2, string.Format( "開発に失敗しました。({0}/{1}/{2}/{3} 秘書艦: {4})",
 						materials[0], materials[1], materials[2], materials[3],
 						db.Fleet[1].MembersInstance[0].NameWithLevel ) );
 				}

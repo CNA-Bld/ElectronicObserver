@@ -178,7 +178,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi {
 			}
 
 
-			ElectronicObserver.Utility.Logger.Add( 2, "提督が鎮守府に着任しました。これより艦隊の指揮を執ります。" );
+			Utility.Logger.Add( 2, "提督が鎮守府に着任しました。これより艦隊の指揮を執ります。" );
 
 			base.OnResponseReceived( (object)data );
 		}

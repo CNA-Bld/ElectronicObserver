@@ -1,5 +1,5 @@
 ﻿using Codeplex.Data;
-using ElectronicObserver.Backfire.Utility.Mathematics;
+using ElectronicObserver.Backfire.BFUtility.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,7 +110,7 @@ namespace ElectronicObserver.Backfire.Data {
 						int id = int.Parse( data["api_quest_id"] );
 						var quest = Quests[id];
 
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "任務『{0}』を達成しました。", quest.Name ) );
+						Utility.Logger.Add( 2, string.Format( "任務『{0}』を達成しました。", quest.Name ) );
 
 						Quests.Remove( id );
 						Count--;

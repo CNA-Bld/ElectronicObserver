@@ -268,11 +268,11 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 
 			// ロギング
 			if ( IsPractice ) {
-				ElectronicObserver.Utility.Logger.Add( 2,
+				Utility.Logger.Add( 2,
 					string.Format( "演習 で「{0}」{1}の「{2}」と交戦しました。( ランク: {3}, 提督Exp+{4}, 艦娘Exp+{5} )",
 						EnemyAdmiralName, EnemyAdmiralRank, Result.EnemyFleetName, Result.Rank, Result.AdmiralExp, Result.BaseExp ) );
 			} else {
-				ElectronicObserver.Utility.Logger.Add( 2,
+				Utility.Logger.Add( 2,
 					string.Format( "{0}-{1}-{2} で「{3}」と交戦しました。( ランク: {4}, 提督Exp+{5}, 艦娘Exp+{6} )",
 						Compass.MapAreaID, Compass.MapInfoID, Compass.Destination, Result.EnemyFleetName, Result.Rank, Result.AdmiralExp, Result.BaseExp ) );
 			}
@@ -287,7 +287,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 				int shipID = Result.DroppedShipID;
 				int itemID  = Result.DroppedItemID;
 				int eqID = Result.DroppedEquipmentID;
-				bool showLog = ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler;
+				bool showLog = Utility.Configuration.Config.Log.ShowSpoiler;
 
 				if ( shipID != -1 ) {
 
@@ -299,7 +299,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 						DroppedEquipmentCount += defaultSlot.Count( id => id != -1 );
 
 					if ( showLog )
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0}「{1}」が戦列に加わりました。", ship.ShipTypeName, ship.NameWithClass ) );
+						Utility.Logger.Add( 2, string.Format( "{0}「{1}」が戦列に加わりました。", ship.ShipTypeName, ship.NameWithClass ) );
 				}
 
 				if ( itemID != -1 ) {
@@ -311,7 +311,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 					if ( showLog ) {
 						var item = KCDatabase.Instance.UseItems[itemID];
 						var itemmaster = KCDatabase.Instance.MasterUseItems[itemID];
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "アイテム「{0}」を入手しました。( 合計: {1}個 )", itemmaster != null ? itemmaster.Name : ( "不明なアイテム - ID:" + itemID ), ( item != null ? item.Count : 0 ) + DroppedItemCount[itemID] ) );
+						Utility.Logger.Add( 2, string.Format( "アイテム「{0}」を入手しました。( 合計: {1}個 )", itemmaster != null ? itemmaster.Name : ( "不明なアイテム - ID:" + itemID ), ( item != null ? item.Count : 0 ) + DroppedItemCount[itemID] ) );
 					}
 				}
 
@@ -321,7 +321,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 					DroppedEquipmentCount++;
 
 					if ( showLog ) {
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "{0}「{1}」を入手しました。", eq.CategoryTypeInstance.Name, eq.Name ) );
+						Utility.Logger.Add( 2, string.Format( "{0}「{1}」を入手しました。", eq.CategoryTypeInstance.Name, eq.Name ) );
 					}
 				}
 

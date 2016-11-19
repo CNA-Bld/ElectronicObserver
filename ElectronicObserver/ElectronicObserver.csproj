@@ -248,10 +248,10 @@
     <Compile Include="Backfire\Observer\kcsapi\api_req_sortie\battleresult.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_req_sortie\ld_airbattle.cs" />
     <Compile Include="Backfire\Observer\kcsapi\api_start2.cs" />
-    <Compile Include="Backfire\Utility\Data\Calculator.cs" />
-    <Compile Include="Backfire\Utility\Data\ExpTable.cs" />
-    <Compile Include="Backfire\Utility\Mathematics\DateTimeHelper.cs" />
-    <Compile Include="Backfire\Utility\Mathematics\Fraction.cs" />
+    <Compile Include="Backfire\BFUtility\Data\Calculator.cs" />
+    <Compile Include="Backfire\BFUtility\Data\ExpTable.cs" />
+    <Compile Include="Backfire\BFUtility\Mathematics\DateTimeHelper.cs" />
+    <Compile Include="Backfire\BFUtility\Mathematics\Fraction.cs" />
     <Compile Include="Data\AdmiralData.cs" />
     <Compile Include="Data\ArsenalData.cs" />
     <Compile Include="Data\Battle\BattleAirBattle.cs" />

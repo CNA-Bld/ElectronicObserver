@@ -26,11 +26,11 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_mission {
 			var fleet = KCDatabase.Instance.Fleet[_fleetID];
 
 
-			ElectronicObserver.Utility.Logger.Add( 2, string.Format( "#{0}「{1}」が遠征「{2}: {3}」から帰投しました。", fleet.FleetID, fleet.Name, fleet.ExpeditionDestination, data.api_quest_name ) );
+			Utility.Logger.Add( 2, string.Format( "#{0}「{1}」が遠征「{2}: {3}」から帰投しました。", fleet.FleetID, fleet.Name, fleet.ExpeditionDestination, data.api_quest_name ) );
 
 
 			// 獲得資源表示
-			if ( ElectronicObserver.Utility.Configuration.Config.Log.ShowSpoiler ) {
+			if ( Utility.Configuration.Config.Log.ShowSpoiler ) {
 
 				var sb = new LinkedList<string>();
 
@@ -91,7 +91,7 @@ namespace ElectronicObserver.Backfire.Observer.kcsapi.api_req_mission {
 					}
 				}
 
-				ElectronicObserver.Utility.Logger.Add( 2, "遠征結果 - " + Constants.GetExpeditionResult( (int)data.api_clear_result ) + ": " + ( sb.Count == 0 ? "獲得資源なし" : string.Join( ", ", sb ) ) );
+				Utility.Logger.Add( 2, "遠征結果 - " + Constants.GetExpeditionResult( (int)data.api_clear_result ) + ": " + ( sb.Count == 0 ? "獲得資源なし" : string.Join( ", ", sb ) ) );
 			}
 
 

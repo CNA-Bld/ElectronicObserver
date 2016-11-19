@@ -1,5 +1,5 @@
 ﻿using ElectronicObserver.Backfire.Observer;
-using ElectronicObserver.Backfire.Utility.Mathematics;
+using ElectronicObserver.Backfire.BFUtility.Mathematics;
 using ElectronicObserver.Utility.Storage;
 using System;
 using System.Collections.Generic;
@@ -158,7 +158,7 @@ namespace ElectronicObserver.Backfire.Data.Quest {
 
 			bool iscleared;
 
-			switch ( ElectronicObserver.Utility.Configuration.Config.FormQuest.ProgressAutoSaving ) {
+			switch ( Utility.Configuration.Config.FormQuest.ProgressAutoSaving ) {
 				case 0:
 				default:
 					iscleared = false;
@@ -176,7 +176,7 @@ namespace ElectronicObserver.Backfire.Data.Quest {
 				_prevTime = DateTime.Now;
 
 				Save();
-				ElectronicObserver.Utility.Logger.Add( 1, "任務進捗のオートセーブを行いました。" );
+				Utility.Logger.Add( 1, "任務進捗のオートセーブを行いました。" );
 			}
 
 		}

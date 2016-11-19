@@ -1,6 +1,7 @@
 ﻿using ElectronicObserver.Resource;
-using ElectronicObserver.Backfire.Utility.Data;
-using ElectronicObserver.Backfire.Utility.Mathematics;
+using ElectronicObserver.Utility;
+using ElectronicObserver.Backfire.BFUtility.Data;
+using ElectronicObserver.Backfire.BFUtility.Mathematics;
 using ElectronicObserver.Window.Control;
 using System;
 using System.Collections.Generic;
@@ -153,7 +154,7 @@ namespace ElectronicObserver.Backfire.Data {
 
 					_escapedShipList.Clear();
 					if ( IsInSortie ) {
-						ElectronicObserver.Utility.Logger.Add( 2, string.Format( "#{0}「{1}」が帰投しました。", FleetID, Name ) );
+						Utility.Logger.Add( 2, string.Format( "#{0}「{1}」が帰投しました。", FleetID, Name ) );
 					}
 					IsInSortie = false;
 
@@ -342,7 +343,7 @@ namespace ElectronicObserver.Backfire.Data {
 		/// </summary>
 		/// <param name="cond">コンディション。</param>
 		private int GetConditionRecoveryMinute( int cond ) {
-			return Math.Max( (int)Math.Ceiling( ( ElectronicObserver.Utility.Configuration.Config.Control.ConditionBorder - cond ) / 3.0 ) * 3, 0 );
+			return Math.Max( (int)Math.Ceiling( ( Utility.Configuration.Config.Control.ConditionBorder - cond ) / 3.0 ) * 3, 0 );
 		}
 
 		//*/
@@ -448,7 +449,7 @@ namespace ElectronicObserver.Backfire.Data {
 		/// </summary>
 		/// <returns>制空戦力。</returns>
 		public int GetAirSuperiority() {
-			switch ( ElectronicObserver.Utility.Configuration.Config.FormFleet.AirSuperiorityMethod ) {
+			switch ( Utility.Configuration.Config.FormFleet.AirSuperiorityMethod ) {
 				case 0:
 				default:
 					return Calculator.GetAirSuperiorityIgnoreLevel( this );
@@ -462,7 +463,7 @@ namespace ElectronicObserver.Backfire.Data {
 		/// 現在の設定に応じて、索敵能力を取得します。
 		/// </summary>
 		public double GetSearchingAbility() {
-			switch ( ElectronicObserver.Utility.Configuration.Config.FormFleet.SearchingAbilityMethod ) {
+			switch ( Utility.Configuration.Config.FormFleet.SearchingAbilityMethod ) {
 				default:
 				case 0:
 					return Calculator.GetSearchingAbility_Old( this );
@@ -482,7 +483,7 @@ namespace ElectronicObserver.Backfire.Data {
 		/// 現在の設定に応じて、索敵能力を表す文字列を取得します。
 		/// </summary>
 		public string GetSearchingAbilityString() {
-			return this.GetSearchingAbilityString( ElectronicObserver.Utility.Configuration.Config.FormFleet.SearchingAbilityMethod );
+			return this.GetSearchingAbilityString( Utility.Configuration.Config.FormFleet.SearchingAbilityMethod );
 		}
 
 		/// <summary>
@@ -709,7 +710,7 @@ namespace ElectronicObserver.Backfire.Data {
 			{
 				int cond = fleet.MembersInstance.Min( s => s == null ? 100 : s.Condition );
 
-				if ( cond < ElectronicObserver.Utility.Configuration.Config.Control.ConditionBorder && fleet.ConditionTime != null ) {
+				if ( cond < Configuration.Config.Control.ConditionBorder && fleet.ConditionTime != null ) {
 
 					timer = (DateTime)fleet.ConditionTime;
 
@@ -766,17 +767,17 @@ namespace ElectronicObserver.Backfire.Data {
 					break;
 				case FleetStates.Docking:
 					label.Text = "入渠中 " + DateTimeHelper.ToTimeRemainString( timer );
-					if ( ElectronicObserver.Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= ElectronicObserver.Utility.Configuration.Config.NotifierRepair.AccelInterval )
+					if ( Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= Utility.Configuration.Config.NotifierRepair.AccelInterval )
 						label.BackColor = DateTime.Now.Second % 2 == 0 ? Color.LightGreen : Color.Transparent;
 					break;
 				case FleetStates.Expedition:
 					label.Text = "遠征中 " + DateTimeHelper.ToTimeRemainString( timer );
-					if ( ElectronicObserver.Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= ElectronicObserver.Utility.Configuration.Config.NotifierExpedition.AccelInterval )
+					if ( Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= Utility.Configuration.Config.NotifierExpedition.AccelInterval )
 						label.BackColor = DateTime.Now.Second % 2 == 0 ? Color.LightGreen : Color.Transparent;
 					break;
 				case FleetStates.Tired:
 					label.Text = "疲労 " + DateTimeHelper.ToTimeRemainString( timer );
-					if ( ElectronicObserver.Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= 0 )
+					if ( Utility.Configuration.Config.FormFleet.BlinkAtCompletion && ( timer - DateTime.Now ).TotalMilliseconds <= 0 )
 						label.BackColor = DateTime.Now.Second % 2 == 0 ? Color.LightGreen : Color.Transparent;
 					break;
 				case FleetStates.AnchorageRepairing:
