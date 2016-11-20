@@ -4,7 +4,7 @@ using ElectronicObserver.Backfire.Data.Battle.Detail;
 using ElectronicObserver.Backfire.Data.Battle.Phase;
 using ElectronicObserver.Backfire.Observer;
 using ElectronicObserver.Resource;
-using ElectronicObserver.Window.Control;
+using ElectronicObserver.Backfire.Window.Control;
 using ElectronicObserver.Window.Support;
 using System;
 using System.Collections.Generic;

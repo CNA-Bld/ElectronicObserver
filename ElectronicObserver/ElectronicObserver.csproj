@@ -256,6 +256,13 @@
     <Compile Include="Backfire\BFUtility\Data\ExpTable.cs" />
     <Compile Include="Backfire\BFUtility\Mathematics\DateTimeHelper.cs" />
     <Compile Include="Backfire\BFUtility\Mathematics\Fraction.cs" />
+    <Compile Include="Backfire\Window\Control\ShipStatusHP.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Backfire\Window\Control\ShipStatusHP.Designer.cs">
+      <DependentUpon>ShipStatusHP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Backfire\Window\Control\StatusBarModule.cs" />
     <Compile Include="Data\AdmiralData.cs" />
     <Compile Include="Data\ArsenalData.cs" />
     <Compile Include="Data\Battle\BattleAirBattle.cs" />
@@ -668,6 +675,9 @@
     <Compile Include="Window\Support\ControlHelper.cs" />
     <Compile Include="Window\Support\CustomFloatWindowFactory.cs" />
     <Compile Include="Window\Support\WindowPlacementManager.cs" />
+    <EmbeddedResource Include="Backfire\Window\Control\ShipStatusHP.resx">
+      <DependentUpon>ShipStatusHP.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Window\Control\ColorPicker.resx">
       <DependentUpon>ColorPicker.cs</DependentUpon>
     </EmbeddedResource>
