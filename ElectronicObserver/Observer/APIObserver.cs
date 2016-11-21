@@ -751,14 +751,13 @@ namespace ElectronicObserver.Observer {
 
 				APIList.OnRequestReceived( shortpath, parsedData );
 
-                ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnRequestReceived(shortpath, parsedData);
-
 			} catch ( Exception ex ) {
 
 				ErrorReporter.SendErrorReport( ex, "处理 Request 时发生错误。", shortpath, data );
 
 			} finally {
 
+				ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnRequestReceived(shortpath, parsedData);
 				SystemEvents.UpdateTimerEnabled = true;
 
 			}
@@ -786,21 +785,12 @@ namespace ElectronicObserver.Observer {
 				}
 
 
-			    if (shortpath == "api_get_member/ship2")
-			    {
-			        APIList.OnResponseReceived(shortpath, json);
-                    ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, json);
-                }
-			    else if (json.IsDefined("api_data"))
-			    {
-			        APIList.OnResponseReceived(shortpath, json.api_data);
-			        ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, json.api_data);
-			    }
-			    else
-			    {
-			        APIList.OnResponseReceived(shortpath, null);
-                    ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, null);
-                }
+				if (shortpath == "api_get_member/ship2")
+					APIList.OnResponseReceived(shortpath, json);
+				else if (json.IsDefined("api_data"))
+					APIList.OnResponseReceived(shortpath, json.api_data);
+				else
+					APIList.OnResponseReceived(shortpath, null);
 
 
 			} catch ( Exception ex ) {
@@ -808,6 +798,13 @@ namespace ElectronicObserver.Observer {
 				ErrorReporter.SendErrorReport( ex, "处理 Response 时发生错误。", shortpath, data );
 
 			} finally {
+
+				if (shortpath == "api_get_member/ship2")
+					ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, json);
+				else if (json.IsDefined("api_data"))
+					ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, json.api_data);
+				else
+					ElectronicObserver.Backfire.Observer.APIObserver.Instance.OnResponseReceived(shortpath, null);
 
 				SystemEvents.UpdateTimerEnabled = true;
 
