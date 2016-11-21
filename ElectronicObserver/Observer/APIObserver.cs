@@ -732,6 +732,7 @@ namespace ElectronicObserver.Observer {
 		public void LoadRequest( string path, string data ) {
 
 			string shortpath = path.Substring( path.LastIndexOf( "/kcsapi/" ) + 8 );
+			var parsedData = new Dictionary<string, string>();
 
 			try {
 
@@ -739,8 +740,6 @@ namespace ElectronicObserver.Observer {
 
 				SystemEvents.UpdateTimerEnabled = false;
 
-
-				var parsedData = new Dictionary<string, string>();
 				data = HttpUtility.UrlDecode( data );
 
 				foreach ( string unit in data.Split( "&".ToCharArray() ) ) {
@@ -768,6 +767,7 @@ namespace ElectronicObserver.Observer {
 		public void LoadResponse( string path, string data ) {
 
 			string shortpath = path.Substring( path.LastIndexOf( "/kcsapi/" ) + 8 );
+			dynamic json;
 
 			try {
 
@@ -776,7 +776,7 @@ namespace ElectronicObserver.Observer {
 				SystemEvents.UpdateTimerEnabled = false;
 
 
-				var json = DynamicJson.Parse( data.Substring( 7 ) );		//remove "svdata="
+				json = DynamicJson.Parse( data.Substring( 7 ) );		//remove "svdata="
 
 				int result = (int)json.api_result;
 				if ( result != 1 ) {
