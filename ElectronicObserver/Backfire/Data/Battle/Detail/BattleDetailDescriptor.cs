@@ -12,15 +12,31 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 		public static string GetBattleDetail( BattleManager bm ) {
 			var sb = new StringBuilder();
 
-			if ( bm.StartsFromDayBattle ) {
-				sb.AppendLine( "◆ 昼戦 ◆" ).AppendLine( GetBattleDetail( bm.BattleDay ) );
-				if ( bm.BattleNight != null )
-					sb.AppendLine( "◆ 夜戦 ◆" ).AppendLine( GetBattleDetail( bm.BattleNight ) );
+			if ( bm.IsPractice ) {
+				sb.AppendLine( "演習" );
 
 			} else {
-				sb.AppendLine( "◆ 夜戦 ◆" ).AppendLine( GetBattleDetail( bm.BattleNight ) );
-				if ( bm.BattleDay != null )
-					sb.AppendLine( "◆ 昼戦 ◆" ).AppendLine( GetBattleDetail( bm.BattleDay ) );
+				sb.AppendFormat( "{0} ({1}-{2})", bm.Compass.MapInfo.Name, bm.Compass.MapAreaID, bm.Compass.MapInfoID );
+				if ( bm.Compass.MapInfo.EventDifficulty > 0 )
+					sb.AppendFormat( " [{0}]", Constants.GetDifficulty( bm.Compass.MapInfo.EventDifficulty ) );
+				sb.Append( " セル: " ).Append( bm.Compass.Destination.ToString() );
+				if ( bm.Compass.EventID == 5 )
+					sb.Append( " (ボス)" );
+				sb.AppendLine();
+			}
+			if ( bm.Result != null ) {
+				sb.AppendLine( bm.Result.EnemyFleetName );
+			}
+			sb.AppendLine();
+
+
+			sb.AppendFormat( "◆ {0} ◆\r\n", bm.FirstBattle.BattleName ).AppendLine( GetBattleDetail( bm.FirstBattle ) );
+			if ( bm.SecondBattle != null )
+				sb.AppendFormat( "◆ {0} ◆\r\n", bm.SecondBattle.BattleName ).AppendLine( GetBattleDetail( bm.SecondBattle ) );
+
+
+			if ( bm.Result != null ) {
+				sb.AppendLine( GetBattleResult( bm ) );
 			}
 
 			return sb.ToString();
@@ -37,7 +53,15 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 
 				var sb = new StringBuilder();
 
-				if ( phase is PhaseAirBattle ) {
+				if ( phase is PhaseBaseAirRaid ) {
+					var p = phase as PhaseBaseAirRaid;
+
+					sb.AppendLine( "味方基地航空隊 参加中隊:" );
+					sb.Append( "　" ).AppendLine( string.Join( ", ", p.Squadrons.Where( sq => sq.EquipmentInstance != null ).Select( sq => sq.ToString() ) ) );
+
+					GetBattleDetailPhaseAirBattle( sb, p );
+
+				} else if ( phase is PhaseAirBattle ) {
 					var p = phase as PhaseAirBattle;
 
 					GetBattleDetailPhaseAirBattle( sb, p );
@@ -48,6 +72,10 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 
 					foreach ( var a in p.AirAttackUnits ) {
 						sb.AppendFormat( "〈第{0}波〉\r\n", a.AirAttackIndex + 1 );
+
+						sb.AppendLine( "味方基地航空隊 参加中隊:" );
+						sb.Append( "　" ).AppendLine( string.Join( ", ", a.Squadrons.Where( sq => sq.EquipmentInstance != null ).Select( sq => sq.ToString() ) ) );
+
 						GetBattleDetailPhaseAirBattle( sb, a );
 						sb.Append( a.GetBattleDetail() );
 					}
@@ -95,6 +123,12 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 					}
 
 					sb.AppendLine();
+
+					if ( battle.GetPhases().Where( ph => ph is PhaseBaseAirAttack || ph is PhaseBaseAirRaid ).Any( ph => ph != null && ph.IsAvailable ) ) {
+						sb.AppendLine( "〈基地航空隊〉" );
+						GetBattleDetailBaseAirCorps( sb, KCDatabase.Instance.Battle.Compass.MapAreaID );		// :(
+						sb.AppendLine();
+					}
 
 					if ( p.RationIndexes.Length > 0 ) {
 						sb.AppendLine( "〈戦闘糧食補給〉" );
@@ -258,6 +292,16 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 		}
 
 
+		private static void GetBattleDetailBaseAirCorps( StringBuilder sb, int mapAreaID ) {
+			foreach ( var corps in KCDatabase.Instance.BaseAirCorps.Values.Where( corps => corps.MapAreaID == mapAreaID ) ) {
+				sb.AppendFormat( "{0} [{1}]\r\n　{2}\r\n",
+					corps.Name, Constants.GetBaseAirCorpsActionKind( corps.ActionKind ),
+					string.Join( ", ", corps.Squadrons.Values
+						.Where( sq => sq.State == 1 && sq.EquipmentInstance != null )
+						.Select( sq => sq.EquipmentInstance.NameWithLevel ) ) );
+			}
+		}
+
 		private static void GetBattleDetailPhaseAirBattle( StringBuilder sb, PhaseAirBattle p ) {
 
 			if ( p.IsStage1Available ) {
@@ -365,6 +409,60 @@ namespace ElectronicObserver.Backfire.Data.Battle.Detail {
 				resultHP - initialHP );
 		}
 
+
+		private static string GetBattleResult( BattleManager bm ) {
+			var result = bm.Result;
+
+			var sb = new StringBuilder();
+
+
+			sb.AppendLine( "◆ 戦闘結果 ◆" );
+			sb.AppendFormat( "ランク: {0}\r\n", result.Rank );
+
+			if ( bm.IsCombinedBattle ) {
+				sb.AppendFormat( "MVP(主力艦隊): {0}\r\n",
+					result.MVPIndex == -1 ? "(なし)" : bm.FirstBattle.Initial.FriendFleet.MembersInstance[result.MVPIndex - 1].NameWithLevel );
+				sb.AppendFormat( "MVP(随伴艦隊): {0}\r\n",
+					result.MVPIndexCombined == -1 ? "(なし)" : bm.FirstBattle.Initial.FriendFleetEscort.MembersInstance[result.MVPIndexCombined - 1].NameWithLevel );
+
+			} else {
+				sb.AppendFormat( "MVP: {0}\r\n",
+					result.MVPIndex == -1 ? "(なし)" : bm.FirstBattle.Initial.FriendFleet.MembersInstance[result.MVPIndex - 1].NameWithLevel );
+			}
+
+			sb.AppendFormat( "提督経験値: +{0}\r\n艦娘基本経験値: +{1}\r\n",
+				result.AdmiralExp, result.BaseExp );
+
+
+			if ( !bm.IsPractice ) {
+				sb.AppendLine().AppendLine( "ドロップ：" );
+
+
+				int length = sb.Length;
+
+				var ship = KCDatabase.Instance.MasterShips[result.DroppedShipID];
+				if ( ship != null ) {
+					sb.AppendFormat( "　{0} {1}\r\n", ship.ShipTypeName, ship.NameWithClass );
+				}
+
+				var eq = KCDatabase.Instance.MasterEquipments[result.DroppedEquipmentID];
+				if ( eq != null ) {
+					sb.AppendFormat( "　{0} {1}\r\n", eq.CategoryTypeInstance.Name, eq.Name );
+				}
+
+				var item = KCDatabase.Instance.MasterUseItems[result.DroppedItemID];
+				if ( item != null ) {
+					sb.Append( "　" ).AppendLine( item.Name );
+				}
+
+				if ( length == sb.Length ) {
+					sb.AppendLine( "　(なし)" );
+				}
+			}
+
+
+			return sb.ToString();
+		}
 
 	}
 }

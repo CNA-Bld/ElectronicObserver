@@ -1,5 +1,8 @@
-﻿using System;
+﻿using ElectronicObserver.Backfire.Data.Battle.Detail;
+using ElectronicObserver.Backfire.BFUtility.Mathematics;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +13,9 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 	/// 戦闘関連の処理を統括して扱います。
 	/// </summary>
 	public class BattleManager : ResponseWrapper {
+
+		private const string BattleLogPath = "BattleLog";
+
 
 		/// <summary>
 		/// 羅針盤データ
@@ -91,6 +97,31 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 
 
 		/// <summary>
+		/// 1回目の戦闘
+		/// </summary>
+		public BattleData FirstBattle {
+			get {
+				if ( StartsFromDayBattle )
+					return BattleDay;
+				else
+					return BattleNight;
+			}
+		}
+
+		/// <summary>
+		/// 2回目の戦闘
+		/// </summary>
+		public BattleData SecondBattle {
+			get {
+				if ( StartsFromDayBattle )
+					return BattleNight;
+				else
+					return BattleDay;
+			}
+		}
+
+
+		/// <summary>
 		/// 出撃中に入手した艦船数
 		/// </summary>
 		public int DroppedShipCount { get; internal set; }
@@ -140,6 +171,7 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 						BattleMode = BattleModes.BaseAirRaid;
 						BattleDay = new BattleBaseAirRaid();
 						BattleDay.LoadFromResponse( apiname, Compass.AirRaidData );
+						WriteBattleLog();
 					}
 					break;
 
@@ -363,6 +395,9 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 //				RecordManager.Instance.ShipDrop.Add( shipID, itemID, eqID, Compass.MapAreaID, Compass.MapInfoID, Compass.Destination, Compass.MapInfo.EventDifficulty, Compass.EventID == 5, enemyFleetData.FleetID, Result.Rank, KCDatabase.Instance.Admiral.Level );
 			}
 
+			WriteBattleLog();
+
+
 
 			//DEBUG
 			/*/
@@ -564,6 +599,37 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 			//*/
 
 			return rank;
+		}
+
+
+
+		private void WriteBattleLog() {
+
+			if ( !false )
+				return;
+
+			try {
+				string parent = BattleLogPath;
+
+				if ( !Directory.Exists( parent ) )
+					Directory.CreateDirectory( parent );
+
+				string info;
+				if ( IsPractice )
+					info = "practice";
+				else
+					info = string.Format( "{0}-{1}-{2}", Compass.MapAreaID, Compass.MapInfoID, Compass.Destination );
+
+				string path = string.Format( "{0}\\{1}@{2}.txt", parent, DateTimeHelper.GetTimeStamp(), info );
+
+				using ( var sw = new StreamWriter( path, false, Utility.Configuration.Config.Log.FileEncoding ) ) {
+					sw.Write( BattleDetailDescriptor.GetBattleDetail( this ) );
+				}
+
+			} catch ( Exception ex ) {
+
+				Utility.ErrorReporter.SendErrorReport( ex, "戦闘ログの出力に失敗しました。" );
+			}
 		}
 
 	}

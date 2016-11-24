@@ -27,6 +27,10 @@ namespace ElectronicObserver.Backfire.Data.Battle {
 			get { return "api_req_combined_battle/midnight_battle"; }
 		}
 
+		public override string BattleName {
+			get { return "連合艦隊 夜戦"; }
+		}
+
 		public override BattleData.BattleTypeFlag BattleType {
 			get { return BattleTypeFlag.Night | BattleTypeFlag.Combined; }
 		}

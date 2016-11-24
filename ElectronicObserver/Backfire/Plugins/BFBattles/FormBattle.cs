@@ -146,7 +146,8 @@ namespace BFBattles {
 						goto case "api_port/port";
 
 					SetFormation( bm.BattleDay );
-					SetSearchingResult( bm.BattleDay );
+					ClearSearchingResult();
+					ClearBaseAirAttack();
 					SetAerialWarfare( bm.BattleDay.AirBattle );
 					SetHPBar( bm.BattleDay );
 					SetDamageRate( bm );
@@ -1126,10 +1127,10 @@ namespace BFBattles {
 
 			var bm = KCDatabase.Instance.Battle;
 
-			if ( bm == null || bm.BattleMode == BattleManager.BattleModes.Undefined ) {
+			if ( bm == null || bm.BattleMode == BattleManager.BattleModes.Undefined )
 				e.Cancel = true;
-			}
 
+			RightClickMenu_ShowBattleResult.Enabled = !BaseLayoutPanel.Visible;
 		}
 
 		private void RightClickMenu_ShowBattleDetail_Click( object sender, EventArgs e ) {
@@ -1145,6 +1146,11 @@ namespace BFBattles {
 			dialog.Show( this );
 
 		}
+
+		private void RightClickMenu_ShowBattleResult_Click( object sender, EventArgs e ) {
+			BaseLayoutPanel.Visible = true;
+		}
+
 
 
 
@@ -1184,7 +1190,7 @@ namespace BFBattles {
 			return "BFBattle";
 		}
 
-
+	
 	}
 
 }
