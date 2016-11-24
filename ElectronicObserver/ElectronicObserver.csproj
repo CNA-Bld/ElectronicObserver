@@ -99,6 +99,7 @@
     <Compile Include="Backfire\Data\BaseAirCorpsSquadron.cs" />
     <Compile Include="Backfire\Data\Battle\BattleAirBattle.cs" />
     <Compile Include="Backfire\Data\Battle\BattleAirRaid.cs" />
+    <Compile Include="Backfire\Data\Battle\BattleBaseAirRaid.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedAirBattle.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedAirRaid.cs" />
     <Compile Include="Backfire\Data\Battle\BattleCombinedEachDay.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Backfire\Data\Battle\Phase\PhaseAirBattle.cs" />
     <Compile Include="Backfire\Data\Battle\Phase\PhaseBase.cs" />
     <Compile Include="Backfire\Data\Battle\Phase\PhaseBaseAirAttack.cs" />
+    <Compile Include="Backfire\Data\Battle\Phase\PhaseBaseAirRaid.cs" />
     <Compile Include="Backfire\Data\Battle\Phase\PhaseInitial.cs" />
     <Compile Include="Backfire\Data\Battle\Phase\PhaseNightBattle.cs" />
     <Compile Include="Backfire\Data\Battle\Phase\PhaseOpeningASW.cs" />
@@ -142,6 +144,7 @@
     <Compile Include="Backfire\Data\IDDictionary.cs" />
     <Compile Include="Backfire\Data\IIdentifiable.cs" />
     <Compile Include="Backfire\Data\KCDatabase.cs" />
+    <Compile Include="Backfire\Data\MapAreaData.cs" />
     <Compile Include="Backfire\Data\MapInfoData.cs" />
     <Compile Include="Backfire\Data\MaterialData.cs" />
     <Compile Include="Backfire\Data\MissionData.cs" />

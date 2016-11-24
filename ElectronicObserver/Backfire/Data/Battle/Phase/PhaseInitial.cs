@@ -125,6 +125,12 @@ namespace ElectronicObserver.Backfire.Data.Battle.Phase {
 			}
 		}
 
+		/// <summary>
+		/// 戦闘糧食を食べた艦娘のインデックス [0-11]
+		/// </summary>
+		public int[] RationIndexes { get; private set; }
+
+
 
 
 		public PhaseInitial( BattleData data, string title )
@@ -133,7 +139,8 @@ namespace ElectronicObserver.Backfire.Data.Battle.Phase {
 			if ( RawData.api_active_deck() ) {
 				FriendFleetID = (int)RawData.api_active_deck[0];
 			} else {
-				dynamic id = RawData.api_dock_id() ? RawData.api_dock_id : RawData.api_deck_id;
+				dynamic id = RawData.api_dock_id() ? RawData.api_dock_id :
+					RawData.api_deck_id() ? RawData.api_deck_id : 1;
 				FriendFleetID = id is string ? int.Parse( (string)id ) : (int)id;
 			}
 
@@ -155,9 +162,19 @@ namespace ElectronicObserver.Backfire.Data.Battle.Phase {
 			EnemySlotsEscort = !RawData.api_eSlot_combined() ? null : ( (dynamic[])RawData.api_eSlot_combined ).Select( d => (int[])d ).ToArray();
 			EnemySlotsEscortInstance = EnemySlotsEscort == null ? null : EnemySlotsEscort.Select( part => part.Select( id => KCDatabase.Instance.MasterEquipments[id] ).ToArray() ).ToArray();
 
-			EnemyParameters = ( (dynamic[])RawData.api_eParam ).Select( d => (int[])d ).ToArray();
+			EnemyParameters = !RawData.api_eParam() ? null : ( (dynamic[])RawData.api_eParam ).Select( d => (int[])d ).ToArray();
 			EnemyParametersEscort = !RawData.api_eParam_combined() ? null : ( (dynamic[])RawData.api_eParam_combined ).Select( d => (int[])d ).ToArray();
 
+			{
+				var rations = new List<int>();
+				if ( RawData.api_combat_ration() ) {
+					rations.AddRange( ( (int[])RawData.api_combat_ration ).Select( i => FriendFleet.Members.IndexOf( i ) ) );
+				}
+				if ( RawData.api_combat_ration_combined() ) {
+					rations.AddRange( ( (int[])RawData.api_combat_ration_combined ).Select( i => FriendFleetEscort.Members.IndexOf( i ) + 6 ) );
+				}
+				RationIndexes = rations.ToArray();
+			}
 		}
 
 
